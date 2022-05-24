@@ -95,8 +95,88 @@ const loginUser = async function (req, res) {
         return res.status(500).send({ status: false, msg: "Error", error: err.message })
     }
 }
+//====================================================[GET USER BY ID]====================================================
+
+const getUserProfile = async function (req, res) {
+    try {
+        const userId = req.params.userId
+        const tokenUserId = req.decodeToken.userId
+        // console.log(tokenUserId +" )
+
+        if (!isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: 'Invalid userId in params' })
+        }
+      
+        const userProfile = await userModel.findOne({ _id: userId })
+        console.log(userProfile)
+        if (!userProfile) {
+            return res.status(400).send({ status: false, message: "User doesn't exits" })
+        }
+        if (tokenUserId !== userProfile._id.toString()) {
+            return res.status(403).send({ status: false, message: 'Unauthorized access' })
+        }
+        return res.status(200).send({ status: true, message: 'Profile successfully found', data: userProfile })
+    }
+    catch (error) {
+        return res.status(500).send({ status: false, message: error.message })
+    }
+}
+
+///===================================================[USER UPDATE API ]====================================================
+// const updateUser = async function (req, res) {
+//     try {
+//         let data=req.body
+//         let { fname, lname, email, profileImage, phone, password } = data;
+//         const userId = req.params.userId;
+//         if (fname) {
+//             if (!(isValid(fname))) {
+//                 return res.status(400).send({ status: false, msg: "fname is not valid " })
+//             }
+//         }
+//         if (lname) {
+//             if (!(isValid(lname))) {
+//                 return res.status(400).send({ status: false, msg: "lname is not valid " })
+//             }
+//         }
+//         if (email) {
+//             if (!emailRegex.test(email)) {
+//                 return res.status(400).send({ status: false, msg: "email  is not valid " })
+//             }
+//             let uniqueEmail = await userModel.findOne({ email: email })
+//             if (uniqueEmail) return res.status(400).send({ status: false, msg: " email is already exists" })
+
+//         }
+//         if (profileImage) {
+
+//         }
+//         if (phone) {
+//             if (!mobileNumberRegex.test(phone)) {
+//                 return res.status(400).send({ status: false, msg: " phone no  is not valid " })
+//             }
+//             let uniquePhoneNumber = await userModel.findOne({ phone: phone })
+//             if (uniquePhoneNumber) return res.status(400).send({ status: false, msg: " phone no  is already exists" })
+//         }
+//         if (password) {
 
 
+//         }
+//         let updateUser = await userModel.findByIdAndUpdate({ _id: userId }, {
+//             $set: {
+//                 fname: fname, lname: lname, email: email, profileImage: profileImage, phone: phone, password: password
+//             }
+//         }, { new: true })
+
+//         if (updateUser == null) {
+//             return res.status(404).send({ status: false, msg: "This book is not available" })
+//         }
+//         res.status(200).send({ status: true, data: updateUser })
+
+//     }
+//     catch (err) {
+//         return res.status(500).send({ err: err.message })
+
+//     }
+// }
 module.exports = {
-    createUser, loginUser
+    createUser, loginUser,getUserProfile
 }
