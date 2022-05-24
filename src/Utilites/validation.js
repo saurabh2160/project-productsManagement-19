@@ -30,7 +30,10 @@ let isValidPassword = function (password) {
 let isValidObjectId = function (ObjectId) {
     return mongoose.isValidObjectId(ObjectId)
 }
-
+let checkPincode=(pincode)=>{
+    let pincoderegex=/^[0-9]{6}$/
+    return pincoderegex.test(pincode)
+}
 
 
 module.exports = {
@@ -40,4 +43,5 @@ module.exports = {
     isValidPhone,
     isValidPassword,
     isValidObjectId,
+    checkPincode
 }
