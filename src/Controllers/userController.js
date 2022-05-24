@@ -1,5 +1,13 @@
 const userModel = require('../Models/userModel')
 const { uploadFile } = require('../AWS_S3/awsUpload')
+const {
+    isValidRequestBody,
+    isEmpty,
+    isValidEmail,
+    isValidPhone,
+    isValidPassword,
+    isValidObjectId, } = require('../Utilites/validation')
+
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const saltRounds = 10
@@ -9,9 +17,22 @@ const createUser = async (req, res) => {
         let data = req.body
         let file = req.files
         let { fname, lname, email, profileImage, phone, password, address } = data
-        if (!data) return res.status(400).send({ status: false, message: "Enter data for creating user" })
-        if (Object.keys(data).length == 0)
-            return res.status(400).send({ status: false, message: "Form data cannot be empty" })
+        let add = JSON.parse(address)
+        console.log(add)
+        if (isValidRequestBody(data)) return res.status(400).send({ status: false, message: "Form data cannot be empty" })
+        if (isEmpty(fname)) return res.status(400).send({ status: false, message: "fname required" })
+        if (isEmpty(lname)) return res.status(400).send({ status: false, message: "lname required" })
+        if (isEmpty(email)) return res.status(400).send({ status: false, message: "email required" })
+        if (isEmpty(phone)) return res.status(400).send({ status: false, message: "phone required" })
+        if (isEmpty(address)) return res.status(400).send({ status: false, message: "address required" })
+        if (isEmpty(add.shipping.city)) return res.status(400).send({ status: false, message: "shipping city required" })
+        //address validation  for addres and its fields 
+        // profileimage
+        //valid passowrd
+        if (!fname.match(/^[#.a-zA-Z\s,-]+$/)) return res.status(400).send({ status: false, message: "enter valid fname" })
+        if (!lname.match(/^[#.a-zA-Z\s,-]+$/)) return res.status(400).send({ status: false, message: "enter valid lname" })
+        if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "enter valid email" })
+        if (!isValidPhone(phone)) return res.status(400).send({ status: false, message: "enter valid phone" })
         let phoneCheck = await userModel.findOne({ phone: phone })
         if (phoneCheck) {
             if (phoneCheck.phone == phone) return res.status(400).send({ status: false, message: "phone number already exist" })
@@ -20,6 +41,9 @@ const createUser = async (req, res) => {
         if (emailCheck) {
             if (emailCheck.email == email) return res.status(400).send({ status: false, message: "email already exist" })
         }
+        const salt = await bcrypt.genSalt(saltRounds)
+        const hashPassword = await bcrypt.hash(password, salt)
+        //console.log(hashPassword)
         if (!file && file.length == 0) return res.status(400).send({ status: false, message: "upload profile image" })
         let uploadedFileURL = await uploadFile(file[0])
         let obj = {
@@ -28,7 +52,7 @@ const createUser = async (req, res) => {
             email,
             profileImage: uploadedFileURL,
             phone,
-            password,
+            password: hashPassword,
             address: JSON.parse(address)
         }
         const result = await userModel.create(obj)
@@ -45,11 +69,11 @@ const createUser = async (req, res) => {
 //----Login
 const loginUser = async function (req, res) {
     try {
-        let email = req.body.email;
-        let password = req.body.password;
-        if (!validation.isValidRequest(req.body)) return res.status(400).send({ status: false, message: "No input by user" })
-        if (!validation.isValidValue(userId)) return res.status(400).send({ status: false, msg: "email is required." })
-        if (!validation.isValidValue(password)) return res.status(400).send({ status: false, msg: "Password is required." })
+        let data = req.body
+        let { email, password } = data
+        // if (!validation.isValidRequest(data)) return res.status(400).send({ status: false, message: "No input by user" })
+        // if (!validation.isValidValue(email)) return res.status(400).send({ status: false, msg: "email is required." })
+        // if (!validation.isValidValue(password)) return res.status(400).send({ status: false, msg: "Password is required." })
 
         let getUser = await userModel.findOne({ email })
         if (!getUser) return res.status(404).send({ status: false, msg: "User not found!" })
@@ -64,7 +88,7 @@ const loginUser = async function (req, res) {
         }, "UrAnIuM#GrOuP@19");
 
         res.setHeader("x-api-key", token);
-        return res.status(201).send({ status: true, msg: "User login sucessful", data: {userId:getUser._id, token:token } })
+        return res.status(201).send({ status: true, msg: "User login sucessful", data: { userId: getUser._id, token: token } })
     }
     catch (err) {
         console.log(err.message)
@@ -74,5 +98,5 @@ const loginUser = async function (req, res) {
 
 
 module.exports = {
-    createUser,loginUser
+    createUser, loginUser
 }
