@@ -3,9 +3,10 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const multer = require('multer')
 const app = express()
+const port = 3000;
 
 const routes = require('./Routes/routes')
-const PORT = process.env.PORT || 3000
+
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -19,5 +20,6 @@ mongoose.connect("mongodb+srv://animesh-dey98:9I9JRLwql3bINqUX@cluster0.vhmqo.mo
 
 app.use('/', routes)
 
-app.listen(PORT, () =>
-    console.log("Express app is listening on port", PORT))
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`);
+});
