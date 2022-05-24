@@ -198,7 +198,6 @@ const updateUser = async function (req, res) {
     try {
         let data = req.body;
         let { fname, lname, email, phone, password, address } = data;
-        let add = JSON.parse(address)
         const userId = req.params.userId;
         const profileImage = req.files;
         const tokenUserId = req.decodeToken.userId;
@@ -246,6 +245,7 @@ const updateUser = async function (req, res) {
             userProfile.profileImage = uploadedFileURL;
         }
         if (!isEmpty(address)) {
+            let add=JSON.parse(address)
             if (add.shipping) {
                 if (add.shipping.street) {
                     userProfile.address.shipping.street = add.shipping.street
