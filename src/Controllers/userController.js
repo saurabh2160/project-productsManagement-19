@@ -71,9 +71,9 @@ const loginUser = async function (req, res) {
     try {
         let data = req.body
         let { email, password } = data
-        // if (!validation.isValidRequest(data)) return res.status(400).send({ status: false, message: "No input by user" })
-        // if (!validation.isValidValue(email)) return res.status(400).send({ status: false, msg: "email is required." })
-        // if (!validation.isValidValue(password)) return res.status(400).send({ status: false, msg: "Password is required." })
+        if (isValidRequestBody(data)) return res.status(400).send({ status: false, message: "No input by user" })
+        if (isEmpty(email)) return res.status(400).send({ status: false, msg: "email is required." })
+        if (isEmpty(password)) return res.status(400).send({ status: false, msg: "Password is required." })
 
         let getUser = await userModel.findOne({ email })
         if (!getUser) return res.status(404).send({ status: false, msg: "User not found!" })
