@@ -5,14 +5,18 @@ const createUser = async (req, res) => {
     try {
         let data = req.body
         let file = req.files
-        let { fname, lname, email, profileImage, phone, password, address} = data
-        console.log(address)
+        let { fname, lname, email, profileImage, phone, password, address } = data
         if (!data) return res.status(400).send({ status: false, message: "Enter data for creating user" })
         if (Object.keys(data).length == 0)
             return res.status(400).send({ status: false, message: "Form data cannot be empty" })
-        // let uniqueCheck = await userModel.findOne({ phone: phone, email: email })
-        // if (uniqueCheck.phone == phone) return res.status(400).send({ status: false, message: "phone number already exsit" })
-        // if (uniqueCheck.email == email) return res.status(400).send({ status: false, message: "email number already exsit" })
+        let phoneCheck = await userModel.findOne({ phone: phone })
+        if (phoneCheck) {
+            if (phoneCheck.phone == phone) return res.status(400).send({ status: false, message: "phone number already exist" })
+        }
+        let emailCheck = await userModel.findOne({ email: email })
+        if (emailCheck) {
+            if (emailCheck.email == email) return res.status(400).send({ status: false, message: "email already exist" })
+        }
         if (!file && file.length == 0) return res.status(400).send({ status: false, message: "upload profile image" })
         let uploadedFileURL = await uploadFile(file[0])
         let obj = {
@@ -22,8 +26,8 @@ const createUser = async (req, res) => {
             profileImage: uploadedFileURL,
             phone,
             password,
-            address:address
-            }
+            address: JSON.parse(address)
+        }
         const result = await userModel.create(obj)
         res.status(201).send({ status: true, data: result })
     }
