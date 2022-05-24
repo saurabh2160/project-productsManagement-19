@@ -108,7 +108,7 @@ const getUserProfile = async function (req, res) {
         }
       
         const userProfile = await userModel.findOne({ _id: userId })
-        console.log(userProfile)
+        // console.log(userProfile)
         if (!userProfile) {
             return res.status(400).send({ status: false, message: "User doesn't exits" })
         }
