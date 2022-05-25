@@ -104,6 +104,8 @@ const createUser = async (req, res) => {
         res.status(500).send({ status: false, message: e.message });
     }
 };
+ 
+
 
 //----Login
 const loginUser = async function (req, res) {
@@ -155,6 +157,9 @@ const loginUser = async function (req, res) {
             .send({ status: false, msg: "Error", error: err.message });
     }
 };
+
+
+
 //====================================================[GET USER BY ID]====================================================
 
 const getUserProfile = async function (req, res) {
@@ -170,7 +175,10 @@ const getUserProfile = async function (req, res) {
         }
 
         const userProfile = await userModel.findOne({ _id: userId });
-       // console.log(userProfile);
+        // console.log(userProfile);
+        // console.log(userProfile._id.toString());
+        // console.log(userProfile._id);
+        // console.log(tokenUserId);
         if (!userProfile) {
             return res
                 .status(400)
@@ -245,7 +253,7 @@ const updateUser = async function (req, res) {
             userProfile.profileImage = uploadedFileURL;
         }
         if (!isEmpty(address)) {
-            let add=JSON.parse(address)
+            let add = JSON.parse(address)
             if (add.shipping) {
                 if (add.shipping.street) {
                     userProfile.address.shipping.street = add.shipping.street
