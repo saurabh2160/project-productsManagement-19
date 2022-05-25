@@ -12,7 +12,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(multer().any())
 
-mongoose.connect("mongodb+srv://animesh-dey98:9I9JRLwql3bINqUX@cluster0.vhmqo.mongodb.net/group19Database",
+mongoose.connect("mongodb+srv://saurabh042160:iafSq7ML1zCfugKI@cluster1.ymdh1.mongodb.net/GROUP-19",
     { useNewUrlParser: true })
 
     .then(() => console.log("MongoDB is Connected..."))
