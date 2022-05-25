@@ -51,7 +51,7 @@ const getProduct = async (req, res) => {
         }
 
         if (!isEmpty(name)) {
-            filter['title'] = name
+            filter['title'] = {$regex:name, $options: 'i'}
         }
 
         if (!isEmpty(priceGreaterThan)) {
@@ -63,7 +63,7 @@ const getProduct = async (req, res) => {
         }
 
 
-        console.log(filter)
+        // console.log(filter)
         let findBooks = await productModel.find(filter)
         if (findBooks.length === 0) return res.status(404).send({ status: false, message: "No products found" })
         res.status(200).send({ status: true, data: findBooks })
