@@ -29,13 +29,17 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "title invalid" });
         if (isEmpty(description))
             return res.status(400).send({ status: false, message: "description required" });
-        if (!stringCheck(description))
-            return res.status(400).send({ status: false, message: "description invalid" });
+        // if (!stringCheck(description))
+        //     return res.status(400).send({ status: false, message: "description invalid" });
         if (isEmpty(price))
             return res.status(400).send({ status: false, message: "price required" });
+        // if (!price.match(/^[0-9]$/))
+        //     return res.status(400).send({ status: false, message: "price invalid" })
         let pricenum = Number(price)
         let amount = pricenum.toFixed(3)
         //console.log(amount)
+        if (!installments.match(/^[0-9]{1,2}$/))
+            return res.status(400).send({ status: false, message: "installment invalid" });
         if (isEmpty(currencyId))
             return res.status(400).send({ status: false, message: "currencyId required" });
         if (currencyId !== 'INR')
@@ -70,7 +74,7 @@ const createProduct = async (req, res) => {
             currencyFormat,
             isFreeShipping,
             style,
-            availableSizes:arr2,
+            availableSizes: arr2,
             installments,
             productImage: uploadedFileURL
         }
@@ -153,6 +157,125 @@ const productByid = async function (req, res) {
 
 //================================================[put:update product]===============================================================
 
+const updateProduct = async (req, res) => {
+    try {
+        let data = req.body;
+        const productId = req.params.productId
+        let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, isDeleted, deletedAt } = data
+        if (isValidRequestBody(data))
+            return res.status(400).send({ status: false, message: "Form data cannot be empty" });
+        if (!isValidObjectId(productId))
+            return res.status(400).send({ status: false, message: "Invalid ProductId in params" });
+        if (isDeleted || deletedAt)
+            return res.status(400).send({ status: false, message: "Action can not be performed" });
+        const product = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!product)
+            return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
+        if (title) {
+            if (!isEmpty(title)) {
+                if (!stringCheck(title))
+                    return res.status(400).send({ status: false, message: "title invalid" });
+                product.title = title
+            }
+        }
+        if (description) {
+            if (!isEmpty(description)) {
+                if (!stringCheck(description))
+                    return res.status(400).send({ status: false, message: "description invalid" });
+                product.description = description
+            }
+        }
+        if (price) {
+            if (!isEmpty(price)) {
+                // if (!price.match(/^[0-9]$/))
+                //     return res.status(400).send({ status: false, message: "price invalid" })
+                product.price = price
+            }
+        }
+        if (currencyId) {
+            if (!isEmpty(currencyId))
+                if (currencyId !== 'INR')
+                    return res.status(400).send({ status: false, message: "currencyId must be INR only" });
+            product.currencyId = currencyId
+        }
+        if (currencyFormat) {
+            if (!isEmpty(currencyFormat))
+                if (currencyFormat !== '₹')
+                    return res.status(400).send({ status: false, message: "currencyformat must be ₹ only" });
+            product.currencyFormat = currencyFormat
+
+        }
+        if (availableSizes) {
+            if (!isEmpty(availableSizes))
+                if (availableSizes) {
+                    let arr1 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
+                    var arr2 = availableSizes.split(",")
+                    for (let i = 0; i < arr2.length; i++) {
+                        if (!arr1.includes(arr2[i])) {
+                            return res.status(400).send({ status: false, message: "availableSizes must be [S, XS, M, X, L, XXL, XL]" });
+                        }
+                    }
+                    product.availableSizes = arr2
+                }
+        }
+        if (isFreeShipping) {
+            if (!isEmpty(isFreeShipping))
+                if (typeof isFreeShipping !== 'boolean')
+                    return res.status(400).send({ status: false, message: "isFreeshipping is a boolean type only" });
+            product.isFreeShipping = isFreeShipping
+        }
+        if (style) {
+            if (!isEmpty(style))
+                product.style = style
+        }
+        if (installments) {
+            if (!isEmpty(installments))
+                if (!installments.match(/^[0-9]{1,2}$/))
+                    return res.status(400).send({ status: false, message: "installment invalid" });
+            product.installments = installments
+        }
+        // if (productImage) {
+        //     if (isEmpty(productImage))
+        //         returnres.status(400).send({ status: false, message: "product image field cannot be empty" });
+        // }
+        let productpic = req.files;
+        if (productpic.length > 0) {
+            if (productpic.length == 0)
+                return res.status(400).send({ status: false, message: "upload product image" });
+            if (productpic.length > 1)
+                return res.status(400).send({ status: false, message: "only one image at a time" });
+            if (!checkImage(productpic[0].originalname))
+                return res.status(400).send({ status: false, message: "upload product image only" })
+            let uploadedFileURL = await uploadFile(productpic[0]);
+            product.productImage = uploadedFileURL
+        }
+        await product.save()
+        res.status(200).send({ status: true, message: "success", data: product })
+    } catch (e) {
+        console.log(e.message);
+        res.status(500).send({ status: false, message: e.message });
+    }
+}
+
+//================================================[delete product api]==================================================================
+
+const deleteByid = async function (req, res) {
+    try {
+        let productId = req.params.productId
+        if (!isValidObjectId(productId))
+            return res.status(400).send({ status: false, message: "Invalid ProductId in params" });
+       
+        let product = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!product) return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
+
+        let deleteProduct = await productModel.findOneAndUpdate({_id:productId}, {$set:{isDeleted:true, deletedAt: new Date()}},{new:true})
+        res.status(200).send({ status: true, message: " Product Deleted Successfully", data: deleteProduct })
+    }
+    catch (e) {
+        console.log(e.message);
+        res.status(500).send({ status: false, message: e.message });
+    }
+}
 
 
 
@@ -162,8 +285,4 @@ const productByid = async function (req, res) {
 
 
 
-
-
-
-
-module.exports = { createProduct, getProduct, productByid }
+module.exports = { createProduct, getProduct, productByid, updateProduct,deleteByid}

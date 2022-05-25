@@ -32,7 +32,7 @@ let isValidObjectId = function (ObjectId) {
     return mongoose.isValidObjectId(ObjectId)
 }
 let checkPincode = (pincode) => {
-    let pincoderegex = /^[0-9]{6}$/
+    let pincoderegex = /^[0-9]{2}$/
     return pincoderegex.test(pincode)
 }
 let checkImage = (img) => {
