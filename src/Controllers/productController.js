@@ -37,4 +37,44 @@ const createProduct = async (req, res) => {
     }
 }
 
-module.exports={createProduct}
+//-----------Get Product-------------//
+const getProduct = async (req, res) => {
+    try {
+        let userQuery = req.query
+
+        let filter = { isDeleted: false }
+        let { size, name, priceGreaterThan, priceLessThan } = userQuery
+
+        if (!isEmpty(size)) {
+            const sizeArray = size.trim().split(",").map((s) => s.trim());
+            filter['availableSizes'] = { $all: sizeArray }
+        }
+
+        if (!isEmpty(name)) {
+            filter['title'] = name
+        }
+
+        if (!isEmpty(priceGreaterThan)) {
+            filter['price'] = { $gt: priceGreaterThan }
+        }
+
+        if (!isEmpty(priceLessThan)) {
+            filter['price'] = { $lt: priceLessThan }
+        }
+
+
+        console.log(filter)
+        let findBooks = await productModel.find(filter)
+        if (findBooks.length === 0) return res.status(404).send({ status: false, message: "No products found" })
+        res.status(200).send({ status: true, data: findBooks })
+
+    } catch (e) {
+        console.log(e.message);
+        res.status(500).send({ status: false, message: e.message });
+    }
+
+
+
+}
+
+module.exports={createProduct,getProduct}
