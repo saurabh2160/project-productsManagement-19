@@ -14,7 +14,7 @@ const productSchema = new mongoose.Schema(
         trim: true
     },
     price: {
-        type:Number,  //valid number/decimal
+        type:Number  ,  //valid number/decimal
         required: true,
         trim: true 
     },           
