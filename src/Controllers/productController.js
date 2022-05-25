@@ -16,7 +16,7 @@ const createProduct = async (req, res) => {
         if (productImage.length == 0)
             return res.status(400).send({ status: false, message: "upload product image" });
         let uploadedFileURL = await uploadFile(productImage[0]);
-        let obj={
+        let obj = {
             title,
             description,
             price,
@@ -26,10 +26,10 @@ const createProduct = async (req, res) => {
             style,
             availableSizes,
             installments,
-            productImage:uploadedFileURL
+            productImage: uploadedFileURL
         }
-        let result=await productModel.create(obj)
-        res.status(201).send({status:true,message: 'Success',data:result})
+        let result = await productModel.create(obj)
+        res.status(201).send({ status: true, message: 'Success', data: result })
     }
     catch (e) {
         console.log(e.message);
@@ -44,7 +44,6 @@ const getProduct = async (req, res) => {
 
         let filter = { isDeleted: false }
         let { size, name, priceGreaterThan, priceLessThan } = userQuery
-
         if (!isEmpty(size)) {
             const sizeArray = size.trim().split(",").map((s) => s.trim());
             filter['availableSizes'] = { $all: sizeArray }
@@ -53,17 +52,20 @@ const getProduct = async (req, res) => {
         if (!isEmpty(name)) {
             filter['title'] = name
         }
-
-        if (!isEmpty(priceGreaterThan)) {
-            filter['price'] = { $gt: priceGreaterThan }
+        if (priceGreaterThan) {
+            if (!isEmpty(priceGreaterThan)) {
+                filter['price'] = { $gt: priceGreaterThan }
+            }
         }
-
-        if (!isEmpty(priceLessThan)) {
-            filter['price'] = { $lt: priceLessThan }
+        if (priceLessThan) {
+            if (!isEmpty(priceLessThan)) {
+                filter['price'] = { $lt: priceLessThan }
+            }
+        } 
+        if (priceGreaterThan && priceLessThan) {
+            filter['price'] =  { $gte: priceGreaterThan, $lte: priceLessThan } 
         }
-
-
-        console.log(filter)
+        //console.log(range)
         let findBooks = await productModel.find(filter)
         if (findBooks.length === 0) return res.status(404).send({ status: false, message: "No products found" })
         res.status(200).send({ status: true, data: findBooks })
@@ -77,4 +79,4 @@ const getProduct = async (req, res) => {
 
 }
 
-module.exports={createProduct,getProduct}
+module.exports = { createProduct, getProduct }
