@@ -19,8 +19,6 @@ const createUser = async (req, res) => {
         let data = req.body;
         let profileImage = req.files;
         let { fname, lname, email, phone, password, address } = data;
-        let add = JSON.parse(address);
-        //console.log(profileImage)
         if (isValidRequestBody(data))
             return res
                 .status(400)
@@ -41,6 +39,7 @@ const createUser = async (req, res) => {
             return res.status(400).send({ status: false, message: "phone required" });
         if (isEmpty(address))
             return res.status(400).send({ status: false, message: "address required" });
+        let add = JSON.parse(address);
         if (isEmpty(add.shipping))
             return res.status(400).send({ status: false, message: "shipping address required" });
         if (isEmpty(add.billing))

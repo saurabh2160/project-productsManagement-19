@@ -9,7 +9,7 @@ let isValidRequestBody = function (body) {
 let isEmpty = function (value) {
     if (typeof value === 'undefined' || value === null) return true;
     if (typeof value === 'string' && value.trim().length === 0) return true;
-    
+
     return false;
 }
 
@@ -31,9 +31,17 @@ let isValidPassword = function (password) {
 let isValidObjectId = function (ObjectId) {
     return mongoose.isValidObjectId(ObjectId)
 }
-let checkPincode=(pincode)=>{
-    let pincoderegex=/^[0-9]{6}$/
+let checkPincode = (pincode) => {
+    let pincoderegex = /^[0-9]{6}$/
     return pincoderegex.test(pincode)
+}
+let checkImage = (img) => {
+    let imageRegex = /(jpeg|png|jpg)$/
+    return imageRegex.test(img)
+}
+let stringCheck = (string) => {
+    let stringreg = /^[#.a-zA-Z0-9\s,-]+$/
+    return stringreg.test(string)
 }
 
 
@@ -44,5 +52,7 @@ module.exports = {
     isValidPhone,
     isValidPassword,
     isValidObjectId,
-    checkPincode
+    checkPincode,
+    checkImage,
+    stringCheck
 }
