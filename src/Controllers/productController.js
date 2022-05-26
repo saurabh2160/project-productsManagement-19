@@ -51,7 +51,7 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "availableSizes required" });
         if (availableSizes) {
             let arr1 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            var arr2 = availableSizes.toUpperCase().split(",")
+            var arr2 = availableSizes.toUpperCase().split(",").map((s) => s.trim())
             console.log(arr2)
             for (let i = 0; i < arr2.length; i++) {
                 if (!arr1.includes(arr2[i])) {
@@ -96,8 +96,8 @@ const getProduct = async (req, res) => {
         let { size, name, priceGreaterThan, priceLessThan, priceSort } = userQuery
         if (Object.keys(userQuery).length > 0) {
             if (!isEmpty(size)) {
-                const sizeArray = size.trim().split(",").map((s) => s.trim());
-                filter['availableSizes'] = { $all: sizeArray }
+                const sizeArray = size.toUpperCase().trim().split(",").map((s) => s.trim());
+                filter['availableSizes'] = { $all: sizeArray}
             }
 
             if (!isEmpty(name)) {
@@ -213,7 +213,7 @@ const updateProduct = async (req, res) => {
             if (!isEmpty(availableSizes))
                 if (availableSizes) {
                     let arr1 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-                    var arr2 = availableSizes.toUpperCase().split(",")
+                    var arr2 = availableSizes.toUpperCase().split(",").map((s) => s.trim())
                     for (let i = 0; i < arr2.length; i++) {
                         if (!arr1.includes(arr2[i])) {
                             return res.status(400).send({ status: false, message: "availableSizes must be [S, XS, M, X, L, XXL, XL]" });
