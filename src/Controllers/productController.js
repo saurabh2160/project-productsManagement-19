@@ -278,11 +278,4 @@ const deleteByid = async function (req, res) {
 }
 
 
-
-
-
-
-
-
-
 module.exports = { createProduct, getProduct, productByid, updateProduct,deleteByid}
