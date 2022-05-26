@@ -13,7 +13,7 @@ const {
 
 const createProduct = async (req, res) => {
     try {
-        let data = JSON.parse(JSON.stringify(req.body));;
+        let data = JSON.parse(JSON.stringify(req.body));
         let productImage = req.files;
         // console.log(productImage[0].originalname)
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data

@@ -36,6 +36,6 @@ const cartSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },          //comment: "Holds total number of items in the cart"
-})
+},{timestamps:true})
 
 module.exports = mongoose.model('Cart', cartSchema)
