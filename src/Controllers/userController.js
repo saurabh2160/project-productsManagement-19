@@ -25,8 +25,8 @@ const createUser = async (req, res) => {
             return res
                 .status(400)
                 .send({ status: false, message: "Form data cannot be empty" });
-        if (profileImage.length == 0)
-            return res.status(400).send({ status: false, message: "upload profile image" });
+        // if (profileImage.length == 0)
+        //     return res.status(400).send({ status: false, message: "upload profile image" });
         if (isEmpty(fname))
             return res.status(400).send({ status: false, message: "fname required" });
         if (isEmpty(lname))
