@@ -8,7 +8,7 @@ const {
     checkImage,
     stringCheck,
     anyObjectKeysEmpty,
-    
+
 } = require("../Utilites/validation");
 
 const createProduct = async (req, res) => {
@@ -91,7 +91,8 @@ const createProduct = async (req, res) => {
 const getProduct = async (req, res) => {
     try {
         let userQuery = req.query
-
+        let checkquery = anyObjectKeysEmpty(userQuery)
+        if (checkquery) return res.status(400).send({ status: false, message: `${checkquery} can't be empty` });
         let filter = { isDeleted: false }
         let { size, name, priceGreaterThan, priceLessThan, priceSort } = userQuery
         if (Object.keys(userQuery).length > 0) {
