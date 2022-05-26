@@ -32,7 +32,7 @@ let isValidObjectId = function (ObjectId) {
     return mongoose.isValidObjectId(ObjectId)
 }
 let checkPincode = (pincode) => {
-    let pincoderegex = /^[0-9]{2}$/
+    let pincoderegex = /^[0-9]{6}$/
     return pincoderegex.test(pincode)
 }
 let checkImage = (img) => {
@@ -44,6 +44,20 @@ let stringCheck = (string) => {
     return stringreg.test(string)
 }
 
+ let anyObjectKeysEmpty = (value) =>{ 
+    let obArr = Object.keys(value)
+    let str = ''
+    obArr.forEach(e=>{
+        if(value.hasOwnProperty(e) && value[e].trim() == "") {
+            str+=`${e} `
+        }
+    })
+
+    str = str.trim()
+
+    return str==""?false:str
+ }
+
 
 module.exports = {
     isValidRequestBody,
@@ -54,5 +68,6 @@ module.exports = {
     isValidObjectId,
     checkPincode,
     checkImage,
-    stringCheck
+    stringCheck,
+    anyObjectKeysEmpty
 }

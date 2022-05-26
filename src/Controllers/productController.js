@@ -6,12 +6,14 @@ const {
     isEmpty,
     isValidObjectId,
     checkImage,
-    stringCheck
+    stringCheck,
+    anyObjectKeysEmpty,
+    
 } = require("../Utilites/validation");
 
 const createProduct = async (req, res) => {
     try {
-        let data = req.body;
+        let data = JSON.parse(JSON.stringify(req.body));;
         let productImage = req.files;
         // console.log(productImage[0].originalname)
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
@@ -22,7 +24,7 @@ const createProduct = async (req, res) => {
         if (productImage.length > 1)
             return res.status(400).send({ status: false, message: "only one image at a time" });
         if (!checkImage(productImage[0].originalname))
-            return res.status(400).send({ status: false, message: "upload product image only" })
+            return res.status(400).send({ status: false, message: "format must be jpeg/jpg/png only" })
         if (isEmpty(title))
             return res.status(400).send({ status: false, message: "title required" });
         if (!stringCheck(title))
@@ -33,11 +35,8 @@ const createProduct = async (req, res) => {
         //     return res.status(400).send({ status: false, message: "description invalid" });
         if (isEmpty(price))
             return res.status(400).send({ status: false, message: "price required" });
-        // if (!price.match(/^[0-9]$/))
-        //     return res.status(400).send({ status: false, message: "price invalid" })
-        let pricenum = Number(price)
-        let amount = pricenum.toFixed(3)
-        //console.log(amount)
+        if (!price.match(/^\d{0,8}(\.\d{1,4})?$/))
+            return res.status(400).send({ status: false, message: "price invalid" })
         if (!installments.match(/^[0-9]{1,2}$/))
             return res.status(400).send({ status: false, message: "installment invalid" });
         if (isEmpty(currencyId))
@@ -52,7 +51,8 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "availableSizes required" });
         if (availableSizes) {
             let arr1 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            var arr2 = availableSizes.split(",")
+            var arr2 = availableSizes.toUpperCase().split(",")
+            console.log(arr2)
             for (let i = 0; i < arr2.length; i++) {
                 if (!arr1.includes(arr2[i])) {
                     return res.status(400).send({ status: false, message: "availableSizes must be [S, XS, M, X, L, XXL, XL]" });
@@ -69,7 +69,7 @@ const createProduct = async (req, res) => {
         let obj = {
             title,
             description,
-            price: amount,
+            price,
             currencyId,
             currencyFormat,
             isFreeShipping,
@@ -124,9 +124,9 @@ const getProduct = async (req, res) => {
                 }
             }
         }
-        let findBooks = await productModel.find(filter).sort({ price: priceSort })
-        if (findBooks.length === 0) return res.status(404).send({ status: false, message: "No products found" })
-        res.status(200).send({ status: true, data: findBooks })
+        let product = await productModel.find(filter).sort({ price: priceSort })
+        if (product.length === 0) return res.status(404).send({ status: false, message: "No products found" })
+        res.status(200).send({ status: true, data: product })
 
     } catch (e) {
         console.log(e.message);
@@ -159,9 +159,12 @@ const productByid = async function (req, res) {
 
 const updateProduct = async (req, res) => {
     try {
-        let data = req.body;
+        let data = JSON.parse(JSON.stringify(req.body));
+        let checkObj = anyObjectKeysEmpty(data)
+        if (checkObj) return res.status(400).send({ status: false, message: `${checkObj} can't be empty` });
         const productId = req.params.productId
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, isDeleted, deletedAt } = data
+
         if (isValidRequestBody(data))
             return res.status(400).send({ status: false, message: "Form data cannot be empty" });
         if (!isValidObjectId(productId))
@@ -171,6 +174,7 @@ const updateProduct = async (req, res) => {
         const product = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!product)
             return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
+
         if (title) {
             if (!isEmpty(title)) {
                 if (!stringCheck(title))
@@ -187,8 +191,8 @@ const updateProduct = async (req, res) => {
         }
         if (price) {
             if (!isEmpty(price)) {
-                // if (!price.match(/^[0-9]$/))
-                //     return res.status(400).send({ status: false, message: "price invalid" })
+                if (!price.match(/^\d{0,8}(\.\d{1,4})?$/))
+                    return res.status(400).send({ status: false, message: "price invalid" })
                 product.price = price
             }
         }
@@ -209,7 +213,7 @@ const updateProduct = async (req, res) => {
             if (!isEmpty(availableSizes))
                 if (availableSizes) {
                     let arr1 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-                    var arr2 = availableSizes.split(",")
+                    var arr2 = availableSizes.toUpperCase().split(",")
                     for (let i = 0; i < arr2.length; i++) {
                         if (!arr1.includes(arr2[i])) {
                             return res.status(400).send({ status: false, message: "availableSizes must be [S, XS, M, X, L, XXL, XL]" });
@@ -234,18 +238,12 @@ const updateProduct = async (req, res) => {
                     return res.status(400).send({ status: false, message: "installment invalid" });
             product.installments = installments
         }
-        // if (productImage) {
-        //     if (isEmpty(productImage))
-        //         returnres.status(400).send({ status: false, message: "product image field cannot be empty" });
-        // }
         let productpic = req.files;
         if (productpic.length > 0) {
-            if (productpic.length == 0)
-                return res.status(400).send({ status: false, message: "upload product image" });
             if (productpic.length > 1)
                 return res.status(400).send({ status: false, message: "only one image at a time" });
             if (!checkImage(productpic[0].originalname))
-                return res.status(400).send({ status: false, message: "upload product image only" })
+                return res.status(400).send({ status: false, message: "format must be jpeg/jpg/png only" })
             let uploadedFileURL = await uploadFile(productpic[0]);
             product.productImage = uploadedFileURL
         }
@@ -264,11 +262,11 @@ const deleteByid = async function (req, res) {
         let productId = req.params.productId
         if (!isValidObjectId(productId))
             return res.status(400).send({ status: false, message: "Invalid ProductId in params" });
-       
+
         let product = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!product) return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
 
-        let deleteProduct = await productModel.findOneAndUpdate({_id:productId}, {$set:{isDeleted:true, deletedAt: new Date()}},{new:true})
+        let deleteProduct = await productModel.findOneAndUpdate({ _id: productId }, { $set: { isDeleted: true, deletedAt: new Date() } }, { new: true })
         res.status(200).send({ status: true, message: " Product Deleted Successfully", data: deleteProduct })
     }
     catch (e) {
@@ -278,4 +276,6 @@ const deleteByid = async function (req, res) {
 }
 
 
-module.exports = { createProduct, getProduct, productByid, updateProduct,deleteByid}
+
+module.exports = { createProduct, getProduct, productByid, updateProduct, deleteByid }
+
