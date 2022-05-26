@@ -7,7 +7,9 @@ const {
     isValidPhone,
     isValidPassword,
     isValidObjectId,
-    checkPincode
+    checkPincode,
+    anyObjectKeysEmpty,
+    checkImage
 } = require("../Utilites/validation");
 
 const jwt = require("jsonwebtoken");
@@ -16,7 +18,7 @@ const saltRounds = 10;
 
 const createUser = async (req, res) => {
     try {
-        let data = req.body;
+        let data = JSON.parse(JSON.stringify(req.body));;
         let profileImage = req.files;
         let { fname, lname, email, phone, password, address } = data;
         if (isValidRequestBody(data))
@@ -86,6 +88,12 @@ const createUser = async (req, res) => {
         const salt = await bcrypt.genSalt(saltRounds);
         const hashPassword = await bcrypt.hash(password, salt);
         //console.log(hashPassword)
+        if (profileImage.length == 0)
+            return res.status(400).send({ status: false, message: "upload profile image" });
+        if (profileImage.length > 1)
+            return res.status(400).send({ status: false, message: "only one image at a time" });
+        if (!checkImage(profileImage[0].originalname))
+            return res.status(400).send({ status: false, message: "format must be jpeg/jpg/png only" })
         let uploadedFileURL = await uploadFile(profileImage[0]);
         let obj = {
             fname,
@@ -109,7 +117,7 @@ const createUser = async (req, res) => {
 //----Login
 const loginUser = async function (req, res) {
     try {
-        let data = req.body;
+        let data = JSON.parse(JSON.stringify(req.body));
         let { email, password } = data;
         if (isValidRequestBody(data))
             return res
@@ -203,7 +211,9 @@ const getUserProfile = async function (req, res) {
 ///===================================================[USER UPDATE API ]====================================================
 const updateUser = async function (req, res) {
     try {
-        let data = req.body;
+        let data = JSON.parse(JSON.stringify(req.body));
+        let checkdata = anyObjectKeysEmpty(data)
+        if (checkdata) return res.status(400).send({ status: false, message: `${checkdata} can't be empty` });
         let { fname, lname, email, phone, password, address } = data;
         const userId = req.params.userId;
         const profileImage = req.files;
@@ -247,7 +257,11 @@ const updateUser = async function (req, res) {
             const hashPassword = await bcrypt.hash(password, salt);
             userProfile.password = hashPassword;
         }
-        if (profileImage.length > 0) {
+        if (profileImage) {
+            if (profileImage.length > 1)
+                return res.status(400).send({ status: false, message: "only one image at a time" });
+            if (!checkImage(profileImage[0].originalname))
+                return res.status(400).send({ status: false, message: "format must be jpeg/jpg/png only" })
             let uploadedFileURL = await uploadFile(profileImage[0]);
             userProfile.profileImage = uploadedFileURL;
         }
