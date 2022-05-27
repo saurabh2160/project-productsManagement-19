@@ -13,14 +13,14 @@ const {
 
 const createProduct = async (req, res) => {
     try {
-        let data = JSON.parse(JSON.stringify(req.body));;
+        let data = JSON.parse(JSON.stringify(req.body));
         let productImage = req.files;
-         console.log(productImage[0].originalname)
+        // console.log(productImage[0].originalname)
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
         if (isValidRequestBody(data))
             return res.status(400).send({ status: false, message: "Form data cannot be empty" });
         if (productImage.length == 0)
-            return res.status(400).send({ status: false, message: "upload product image" });cd 
+            return res.status(400).send({ status: false, message: "upload product image" });
         if (productImage.length > 1)
             return res.status(400).send({ status: false, message: "only one image at a time" });
         if (!checkImage(productImage[0].originalname))
@@ -51,7 +51,7 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "availableSizes required" });
         if (availableSizes) {
             let arr1 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            var arr2 = availableSizes.toUpperCase().split(",")
+            var arr2 = availableSizes.toUpperCase().split(",").map((s) => s.trim())
             console.log(arr2)
             for (let i = 0; i < arr2.length; i++) {
                 if (!arr1.includes(arr2[i])) {
@@ -97,8 +97,8 @@ const getProduct = async (req, res) => {
         let { size, name, priceGreaterThan, priceLessThan, priceSort } = userQuery
         if (Object.keys(userQuery).length > 0) {
             if (!isEmpty(size)) {
-                const sizeArray = size.trim().split(",").map((s) => s.trim());
-                filter['availableSizes'] = { $all: sizeArray }
+                const sizeArray = size.toUpperCase().trim().split(",").map((s) => s.trim());
+                filter['availableSizes'] = { $all: sizeArray}
             }
 
             if (!isEmpty(name)) {
@@ -137,14 +137,6 @@ const getProduct = async (req, res) => {
 
 
 }
-// const productByid = async  function(req,res){
-//  let productId =  req.params.productId
-//  //console.log(productId);
-//  let findBooks = await productModel.findOne({_id:productId,}).select({__v:0,createdAt:0,updatedAt:0})
-//  if(findBooks.isDeleted==true)  return res.status(400).send({ status: false, message: "product is deleted" })
-//  if (findBooks.length === 0) return res.status(404).send({ status: false, message: "No products found" })
-//  res.status(200).send({ status: true,message:"success", data: findBooks })
-// }
 
 //===============================================[Get product byId]=================================================================
 
@@ -222,7 +214,7 @@ const updateProduct = async (req, res) => {
             if (!isEmpty(availableSizes))
                 if (availableSizes) {
                     let arr1 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-                    var arr2 = availableSizes.toUpperCase().split(",")
+                    var arr2 = availableSizes.toUpperCase().split(",").map((s) => s.trim())
                     for (let i = 0; i < arr2.length; i++) {
                         if (!arr1.includes(arr2[i])) {
                             return res.status(400).send({ status: false, message: "availableSizes must be [S, XS, M, X, L, XXL, XL]" });
@@ -283,12 +275,6 @@ const deleteByid = async function (req, res) {
         res.status(500).send({ status: false, message: e.message });
     }
 }
-
-
-
-
-
-
 
 
 
