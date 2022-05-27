@@ -25,7 +25,7 @@ router.delete('/products/:productId', productController.deleteByid)
 router.post('/users/:userId/cart', mid.mid1, cartController.createCart)
 router.get('/users/:userId/cart', mid.mid1, cartController.getCart)
 router.put('/users/:userId/cart', mid.mid1, cartController.getCart)
-router.delete('/users/:userId/cart', mid.mid1, cartController.updateCart)
+router.delete('/users/:userId/cart', mid.mid1, cartController.deleteCart)
 
 
 
