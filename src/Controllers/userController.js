@@ -18,15 +18,16 @@ const saltRounds = 10;
 
 const createUser = async (req, res) => {
     try {
+    
         let data = JSON.parse(JSON.stringify(req.body));;
+
         let profileImage = req.files;
         let { fname, lname, email, phone, password, address } = data;
         if (isValidRequestBody(data))
             return res
                 .status(400)
-                .send({ status: false, message: "Form data cannot be empty" });
-        // if (profileImage.length == 0)
-        //     return res.status(400).send({ status: false, message: "upload profile image" });
+                .send({ status: false, message: "Form data cannot be empty" })
+        
         if (isEmpty(fname))
             return res.status(400).send({ status: false, message: "fname required" });
         if (isEmpty(lname))
@@ -41,7 +42,8 @@ const createUser = async (req, res) => {
             return res.status(400).send({ status: false, message: "phone required" });
         if (isEmpty(address))
             return res.status(400).send({ status: false, message: "address required" });
-        let add = JSON.parse(address);
+        
+        let add = JSON.parse(address)
         if (isEmpty(add.shipping))
             return res.status(400).send({ status: false, message: "shipping address required" });
         if (isEmpty(add.billing))
@@ -52,7 +54,6 @@ const createUser = async (req, res) => {
             return res.status(400).send({ status: false, message: "shipping street required" });
         if (isEmpty(add.shipping.pincode))
             return res.status(400).send({ status: false, message: "shipping pincode required" });
-
         if (!checkPincode(add.shipping.pincode))
             return res.status(400).send({ status: false, message: "shipping pincode invalid" });
         if (isEmpty(add.billing.street))
@@ -87,7 +88,7 @@ const createUser = async (req, res) => {
         //passowrd bcrypt
         const salt = await bcrypt.genSalt(saltRounds);
         const hashPassword = await bcrypt.hash(password, salt);
-        //console.log(hashPassword)
+      
         if (profileImage.length == 0)
             return res.status(400).send({ status: false, message: "upload profile image" });
         if (profileImage.length > 1)
@@ -102,7 +103,7 @@ const createUser = async (req, res) => {
             profileImage: uploadedFileURL,
             phone,
             password: hashPassword,
-            address: JSON.parse(address),
+            address: add,
         };
         const result = await userModel.create(obj);
         res.status(201).send({ status: true, data: result });
@@ -168,7 +169,6 @@ const getUserProfile = async function (req, res) {
     try {
         const userId = req.params.userId;
         const tokenUserId = req.decodeToken.userId;
-        // console.log(tokenUserId +" )
 
         if (!isValidObjectId(userId)) {
             return res
@@ -189,13 +189,7 @@ const getUserProfile = async function (req, res) {
                 .status(403)
                 .send({ status: false, message: "Unauthorized access" });
         }
-        return res
-            .status(200)
-            .send({
-                status: true,
-                message: "Profile successfully found",
-                data: userProfile,
-            });
+        return res.status(200).send({status: true, message: "Profile successfully found",data: userProfile, });
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message });
     }
@@ -205,18 +199,23 @@ const getUserProfile = async function (req, res) {
 const updateUser = async function (req, res) {
     try {
         let data = JSON.parse(JSON.stringify(req.body));
+       
         let checkdata = anyObjectKeysEmpty(data)
         if (checkdata) return res.status(400).send({ status: false, message: `${checkdata} can't be empty` });
+        
         let { fname, lname, email, phone, password, address } = data;
         const userId = req.params.userId;
-        const profileImage = req.files;
-        const tokenUserId = req.decodeToken.userId;
-        if (isValidRequestBody(data)) return res.status(400).send({ status: false, message: "enter data for update" });
+      
         let userProfile = await userModel.findOne({ _id: userId });
-        //console.log(userProfile.address.shipping.street)
+        if(!userProfile)  return res.status(403).send({ status: false, message: "No user found" });
+      
+        const tokenUserId = req.decodeToken.userId;
         if (userProfile._id.toString() !== tokenUserId)
             return res.status(403).send({ status: false, message: "Unauthorized access" });
-        // validation for empty fname and lname
+
+        if (isValidRequestBody(data)) return res.status(400).send({ status: false, message: "enter data for update" });
+        
+            // validation for empty fname and lname
         if (!isEmpty(fname)) {
             if (!fname.match(/^[#.a-zA-Z\s,-]+$/))
                 return res.status(400).send({ status: false, message: "enter valid fname" });
@@ -250,7 +249,9 @@ const updateUser = async function (req, res) {
             const hashPassword = await bcrypt.hash(password, salt);
             userProfile.password = hashPassword;
         }
-        if (profileImage) {
+       
+        const profileImage = req.files;
+        if (profileImage.length>0) {
             if (profileImage.length > 1)
                 return res.status(400).send({ status: false, message: "only one image at a time" });
             if (!checkImage(profileImage[0].originalname))
@@ -258,26 +259,42 @@ const updateUser = async function (req, res) {
             let uploadedFileURL = await uploadFile(profileImage[0]);
             userProfile.profileImage = uploadedFileURL;
         }
+      
         if (!isEmpty(address)) {
             let add = JSON.parse(address)
             if (add.shipping) {
+                if(typeof add.shipping != 'object'  ||  Object.keys(add.shipping).length==0)
+                return res.status(400).send({ status: false, message: "Shipping address not valid" })
+               
                 if (add.shipping.street) {
+                    if(isEmpty(add.shipping.street))
+                    return res.status(400).send({ status: false, message: "Shipping address street not valid" })
                     userProfile.address.shipping.street = add.shipping.street
                 } if (add.shipping.city) {
+                    if(isEmpty(add.shipping.city))
+                    return res.status(400).send({ status: false, message: "Shipping address city not valid" })
                     userProfile.address.shipping.city = add.shipping.city
                 } if (add.shipping.pincode) {
-                    if (!checkPincode(add.shipping.pincode))
-                        return res.status(400).send({ status: false, message: "shipping pincode invalid" });
+                    if(isEmpty(add.shipping.pincode) || !checkPincode(add.shipping.pincode) )
+                    return res.status(400).send({ status: false, message: "Shipping address pincode not valid" })
                     userProfile.address.shipping.pincode = add.shipping.pincode
                 }
             }
+
             if (add.billing) {
+                if(typeof add.billing != 'object' || Object.keys(add.billing).length==0)
+                return res.status(400).send({ status: false, message: "billing address not valid" })
+              
                 if (add.billing.street) {
+                    if(isEmpty(add.billing.street))
+                    return res.status(400).send({ status: false, message: "Billing address street not valid" })
                     userProfile.address.billing.street = add.billing.street
                 } if (add.billing.city) {
+                    if(isEmpty(add.billing.city))
+                    return res.status(400).send({ status: false, message: "billing address city not valid" })
                     userProfile.address.billing.city = add.billing.city
                 } if (add.billing.pincode) {
-                    if (!checkPincode(add.billing.pincode))
+                    if (isEmpty(add.billing.pincode) || !checkPincode(add.billing.pincode)  )
                         return res.status(400).send({ status: false, message: "billing pincode invalid" })
                     userProfile.address.billing.pincode = add.billing.pincode
                 }
