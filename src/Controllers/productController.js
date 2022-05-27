@@ -279,3 +279,7 @@ const deleteByid = async function (req, res) {
 
 
 module.exports = { createProduct, getProduct, productByid, updateProduct, deleteByid }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0c3db84576ce333815eeef7a01aef578f97041c7
