@@ -21,5 +21,5 @@ mongoose.connect("mongodb+srv://saurabh042160:iafSq7ML1zCfugKI@cluster1.ymdh1.mo
 app.use('/', routes)
 
 app.listen(port, () => {
-    console.log(`Example app listening on port http://localhost:${port} ...🎧🙉🙉`);
+    console.log(`Example app listening on port ${port}...🎧🙉🙉`);
 });
