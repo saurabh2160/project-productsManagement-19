@@ -196,7 +196,7 @@ const updateCart = async (req, res) => {
                     return res.send(validCart)
                 }
             }
-            return res.status(400).send({ status: false, message: "No products found with given productid " })
+            return res.status(400).send({ status: false, message: "No products found with given productid in cart" })
         }
         if (removeProduct == 1) {
             let itemsarr = validCart.items
@@ -225,7 +225,7 @@ const updateCart = async (req, res) => {
                     return res.send({ status: true, data: validCart })
                 }
             }
-            return res.status(400).send({ status: false, message: "No products found with given productid " })
+            return res.status(400).send({ status: false, message: "No products found with given productid in your cart" })
 
         }
     }
