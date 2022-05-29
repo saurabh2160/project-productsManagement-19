@@ -4,16 +4,12 @@ const userModel = require("../Models/userModel");
 const {
     isValidRequestBody,
     isEmpty,
-    isValidObjectId,
-    checkImage,
-    stringCheck,
-    anyObjectKeysEmpty,
-
+    isValidObjectId
 } = require("../Utilites/validation");
 
 //const ObjectId = mongoose.Schema.Types.ObjectId
 
-//--Create Cart--//
+//======================================================🛒🔨🔧[CREATE CART]=================================================//
 const createCart = async (req, res) => {
     try {
         let data = JSON.parse(JSON.stringify(req.body));
@@ -141,11 +137,92 @@ const createCart = async (req, res) => {
     }
 }
 
-//========================================================[UPDATE CART]===========================================================
+//======================================================🔄🛒🛒[UPDATE CART]===========================================================
 const updateCart = async (req, res) => {
-
+    try {
+        let data = JSON.parse(JSON.stringify(req.body))
+        let userId = req.params.userId
+        let tokenUserId = req.decodeToken.userId
+        if (isValidRequestBody(data))
+            return res.status(400).send({ status: false, message: "Body cannot be empty" });
+        let { cartId, productId, removeProduct } = data
+        //console.log(productId)
+        if (isEmpty(userId))
+            return res.status(400).send({ status: false, message: "userId required" });
+        if (!isValidObjectId(userId))
+            return res.status(400).send({ status: false, message: "Invalid user ID" })
+        if (isEmpty(cartId))
+            return res.status(400).send({ status: false, message: "cartId required" });
+        if (!isValidObjectId(cartId))
+            return res.status(400).send({ status: false, message: "Invalid cart ID" })
+        if (isEmpty(productId))
+            return res.status(400).send({ status: false, message: "productId required" });
+        if (!isValidObjectId(productId))
+            return res.status(400).send({ status: false, message: "Invalid product ID" })
+        if (isEmpty(removeProduct))
+            return res.status(400).send({ status: false, message: "removeProduct required" });
+        if (removeProduct < 0 || removeProduct > 1)
+            return res.status(400).send({ status: false, message: "removeproduct can only be 0 or 1" })
+        if (userId !== tokenUserId)
+            return res.status(403).send({ status: false, message: "Unauthorized access" });
+        let validUser = await userModel.findById(userId).catch(e => null)
+        if (!validUser)
+            return res.status(404).send({ status: false, message: "User doesn't exits" });
+        let validProduct = await productModel.findOne({ _id: productId, isDeleted: false }).catch(e => null)
+        if (!validProduct)
+            return res.status(404).send({ status: false, message: "product doesn't exits or has been deleted" });
+        let validCart = await cartModel.findById({ _id: cartId }).catch(e => null)
+        if (!validCart)
+            return res.status(404).send({ status: false, message: "cart doesn't exits or has been deleted" });
+        //🔰🔺 real work is done below
+        if (removeProduct == 0) {
+            let itemsarr = validCart.items
+            if (itemsarr.length == 0)
+                return res.status(400).send({ status: false, message: "No products to delete" })
+            for (let i = 0; i < itemsarr.length; i++) {
+                let productIdInitems = itemsarr[i].productId.toString()
+                let quantity = itemsarr[i].quantity
+                let index = itemsarr.indexOf(itemsarr[i])
+                if (productIdInitems == productId) {
+                    itemsarr.splice(index, 1)
+                    let priceReduce = validCart.totalPrice - (validProduct.price * quantity)
+                    validCart.totalPrice = priceReduce;
+                    let items = validCart.totalItems
+                    validCart.totalItems = items - 1
+                    await validCart.save();
+                    return res.send(validCart)
+                }
+                if (productId !== productIdInitems)
+                    return res.status(400).send({ status: false, message: "product you trying to remove is not in your cart" })
+            }
+        }
+        if (removeProduct == 1) {
+            let itemsarr = validCart.items
+            if (itemsarr.length == 0)
+                return res.status(400).send({ status: false, message: "No products to delete cart is empty" })
+            for (let i = 0; i < itemsarr.length; i++) {
+                let quantity = itemsarr[i].quantity
+                let productIdInitems = itemsarr[i].productId.toString()
+                if (productId == productIdInitems) {
+                    let priceReduce = validCart.totalPrice - validProduct.price
+                    if (quantity <= 1)
+                        return res.status(400).send({ status: false, message: "quantity cannot be reduced to less then 1" })
+                    let newquant = quantity - 1
+                    itemsarr[i].quantity = newquant
+                    validCart.totalPrice = priceReduce
+                    await validCart.save();
+                    // let result = await cartModel.findOne({ _id: userId }).select({ "items._id": 0, __v: 0 })
+                    return res.send({ status: true, data: validCart })
+                }
+            }
+        }
+    }
+    catch (err) {
+        return res.status(500).send({ err: err.message });
+    }
 }
-//========================================================[GET CART]===============================================================
+
+//======================================================📢🧲🛒[GET CART]===============================================================
 
 const getCart = async (req, res) => {
     try {
@@ -168,7 +245,7 @@ const getCart = async (req, res) => {
         return res.status(500).send({ err: err.message });
     }
 }
-//========================================================[DELETE  CART]===============================================================
+//====================================================💥❌🛒[DELETE  CART]===============================================================
 
 const deleteCart = async (req, res) => {
     try {

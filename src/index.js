@@ -15,11 +15,11 @@ app.use(multer().any())
 mongoose.connect("mongodb+srv://saurabh042160:iafSq7ML1zCfugKI@cluster1.ymdh1.mongodb.net/GROUP-19",
     { useNewUrlParser: true })
 
-    .then(() => console.log("MongoDB is Connected..."))
+    .then(() => console.log("MongoDB is Connected...🥳🎉🎈"))
     .catch((err) => console.log(err.message))
 
 app.use('/', routes)
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`Example app listening on port ${port}...🎧🙉🙉`);
 });

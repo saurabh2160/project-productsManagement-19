@@ -181,7 +181,7 @@ const getUserProfile = async function (req, res) {
 
         if (!userProfile) {
             return res
-                .status(400)
+                .status(404)
                 .send({ status: false, message: "User doesn't exits" });
         }
         if (tokenUserId !== userProfile._id.toString()) {
