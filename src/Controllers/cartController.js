@@ -171,18 +171,21 @@ const updateCart = async (req, res) => {
         let validProduct = await productModel.findOne({ _id: productId, isDeleted: false }).catch(e => null)
         if (!validProduct)
             return res.status(404).send({ status: false, message: "product doesn't exits or has been deleted" });
-        let validCart = await cartModel.findById({ _id: cartId }).catch(e => null)
+        let validCart = await cartModel.findOne({ userId: userId }).catch(e => null)
+        //let cartBycartId = await cartModel.findById(cartId)
         if (!validCart)
             return res.status(404).send({ status: false, message: "cart doesn't exits or has been deleted" });
+        if (validCart._id != cartId)
+            return res.status(400).send({ status: false, message: "this cart not belong to this user" })
         //🔰🔺 real work is done below
         if (removeProduct == 0) {
             let itemsarr = validCart.items
             if (itemsarr.length == 0)
-                return res.status(400).send({ status: false, message: "No products to delete" })
+                return res.status(400).send({ status: false, message: "No products to remove cart is empty " })
             for (let i = 0; i < itemsarr.length; i++) {
                 let productIdInitems = itemsarr[i].productId.toString()
                 let quantity = itemsarr[i].quantity
-                let index = itemsarr.indexOf(itemsarr[i])
+                let index = i
                 if (productIdInitems == productId) {
                     itemsarr.splice(index, 1)
                     let priceReduce = validCart.totalPrice - (validProduct.price * quantity)
@@ -192,21 +195,28 @@ const updateCart = async (req, res) => {
                     await validCart.save();
                     return res.send(validCart)
                 }
-                if (productId !== productIdInitems)
-                    return res.status(400).send({ status: false, message: "product you trying to remove is not in your cart" })
             }
+            return res.status(400).send({ status: false, message: "No products found with given productid " })
         }
         if (removeProduct == 1) {
             let itemsarr = validCart.items
             if (itemsarr.length == 0)
-                return res.status(400).send({ status: false, message: "No products to delete cart is empty" })
+                return res.status(400).send({ status: false, message: "No products to reduce cart is empty" })
             for (let i = 0; i < itemsarr.length; i++) {
                 let quantity = itemsarr[i].quantity
                 let productIdInitems = itemsarr[i].productId.toString()
                 if (productId == productIdInitems) {
+                    if (quantity == 1) {
+                        let index = i
+                        itemsarr.splice(index, 1)
+                        let priceReduce = validCart.totalPrice - (validProduct.price * quantity)
+                        validCart.totalPrice = priceReduce;
+                        let items = validCart.totalItems
+                        validCart.totalItems = items - 1
+                        await validCart.save();
+                        return res.send(validCart)
+                    }
                     let priceReduce = validCart.totalPrice - validProduct.price
-                    if (quantity <= 1)
-                        return res.status(400).send({ status: false, message: "quantity cannot be reduced to less then 1" })
                     let newquant = quantity - 1
                     itemsarr[i].quantity = newquant
                     validCart.totalPrice = priceReduce
@@ -215,6 +225,8 @@ const updateCart = async (req, res) => {
                     return res.send({ status: true, data: validCart })
                 }
             }
+            return res.status(400).send({ status: false, message: "No products found with given productid " })
+
         }
     }
     catch (err) {
