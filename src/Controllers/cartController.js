@@ -22,6 +22,11 @@ const createCart = async (req, res) => {
         //getting token from req in auth    
         const tokenUserId = req.decodeToken.userId;
         let { productId, cartId, quantity } = data
+        if (isEmpty(productId))
+            return res.status(400).send({ status: false, message: "product required" })
+        if (!quantity)
+            return res.status(400).send({ status: false, message: "quantity required" })
+        quantity = Number(quantity)
         if (typeof quantity !== 'number')
             return res.status(400).send({ status: false, message: "quantity is number" })
         if (quantity < 1)
@@ -46,47 +51,11 @@ const createCart = async (req, res) => {
         if (!validProduct)
             return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
 
-
-        //if user already has cart
-
-        // let validCart = await cartModel.findOne({ _id: cartId })
-        // if (!cartfind)
-        //     return res.status(404).send({ status: false, message: "No cart found" })
-
-        // let search=await cartModel.findOne({"items.productId":validProduct._id})    
-        //console.log(search.items)
-        // let productidincart = cartfind.items
-        // let uptotal = cartfind.totalPrice + (validProduct.price * Number(quantity))
-        // let proId = validProduct._id.toString()
-        // for (let i = 0; i < productidincart.length; i++) {
-        //     let productfromitem = productidincart[i].productId.toString()
-        //     if (proId == productfromitem) {
-        //         let A = productidincart[i].quantity
-        //         let newquant = A + quantity
-        //         productidincart[i].quantity = newquant
-        //         cartfind.totalPrice = uptotal
-        //         await cartfind.save();
-        //         let result = await cartModel.findOne({ _id: cartId }).select({ "items._id": 0, __v: 0 })
-        //         return res.send({ status: true, data: result })
-        //     }
-        // }
-        // if (cartfind)
-        //     //update cart 
-        //     cartfind.items.push({ productId: productId, quantity: Number(quantity) })
-        // let total = cartfind.totalPrice + (validProduct.price * Number(quantity))
-        // cartfind.totalPrice = total
-        // let count = cartfind.totalItems
-        // cartfind.totalItems = count + 1
-        // await cartfind.save()
-        // let result = await cartModel.findOne({ _id: cartId }).select({ "items._id": 0, __v: 0 })
-        // return res.send({ status: true, data: result })
-
-
         let validCart = await cartModel.findOne({ userId: userId })
         if (validCart) {
             if (cartId) {
                 if (validCart._id != cartId)
-                    return res.status(400).send({ status: false, message: "this cart not belong to this user" })
+                    return res.status(400).send({ status: false, message: "Cart does not belong to this user" })
             }
             let productidincart = validCart.items
             let uptotal = validCart.totalPrice + (validProduct.price * Number(quantity))
@@ -130,7 +99,6 @@ const createCart = async (req, res) => {
         let result = await cartModel.create(obj)
         // let result = await cartModel.findOne({ _id: cartId }).select({ "items._id": 0, __v: 0 })
         return res.send({ status: true, data: result })
-
     }
     catch (err) {
         return res.status(500).send({ err: err.message });
