@@ -101,43 +101,24 @@ const getProduct = async (req, res) => {
 
 
         if (Object.keys(userQuery).length > 0) {
-<<<<<<< HEAD
-           
-            if(!isEmpty(size)){
-                let avilableSize = size.trim().toUpperCase().split(",").map((Elemnt)=>Elemnt.trim())
-                filter['avilableSize']= {$all:avilableSize}
-=======
             if (!isEmpty(size)) {
                 const sizeArray = size.toUpperCase().trim().split(",").map((s) => s.trim());
                 filter['availableSizes'] = { $all: sizeArray }
->>>>>>> 9be0a0a3637cf2e63df3d9006f429a131870ed1e
             }
             if (!isEmpty(name)) {
                 filter['title'] = { $regex: name, $options: 'i' }
                 console.log(filter)
             }
             if (priceGreaterThan) {
-<<<<<<< HEAD
-                if (!isEmpty(priceGreaterThan)) {
-                    filter['price'] = { $gt: priceGreaterThan }
-                    console.log(filter)
-=======
                 if (isEmpty(priceGreaterThan) || !numCheck(priceGreaterThan)) {
                     return res.status(400).send({ status: false, message: "not valid price" })
->>>>>>> 9be0a0a3637cf2e63df3d9006f429a131870ed1e
                 }
                 filter['price'] = { $gt: priceGreaterThan }
 
             }
             if (priceLessThan) {
-<<<<<<< HEAD
-                if (!isEmpty(priceLessThan)) {
-                    filter['price'] = { $lt: priceLessThan }
-                    console.log(filter)
-=======
                 if (isEmpty(priceLessThan) || !numCheck(priceLessThan)) {
                     return res.status(400).send({ status: false, message: "not valid price" })
->>>>>>> 9be0a0a3637cf2e63df3d9006f429a131870ed1e
                 }
                 filter['price'] = { $lt: priceLessThan }
             }
