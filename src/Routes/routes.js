@@ -5,7 +5,7 @@ const mid = require('../Middlewares/auth')
 const userController = require('../Controllers/userController')
 const productController = require('../Controllers/productController')
 const cartController = require('../Controllers/cartController')
-// const orderController = require('../Controllers/orderController')
+ const orderController = require('../Controllers/orderController')
 
 //user routes
 router.post('/register', userController.createUser)
@@ -26,6 +26,9 @@ router.post('/users/:userId/cart', mid.mid1, cartController.createCart)
 router.get('/users/:userId/cart', mid.mid1, cartController.getCart)
 router.put('/users/:userId/cart', mid.mid1, cartController.updateCart)
 router.delete('/users/:userId/cart', mid.mid1, cartController.deleteCart)
+
+//createOrder
+router.post('/users/:userId/orders', mid.mid1, orderController.createOrder)
 
 
 

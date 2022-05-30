@@ -18,7 +18,6 @@ const saltRounds = 10;
 
 const createUser = async (req, res) => {
     try {
-
         let data = JSON.parse(JSON.stringify(req.body));;
 
         let profileImage = req.files;
@@ -27,7 +26,6 @@ const createUser = async (req, res) => {
             return res
                 .status(400)
                 .send({ status: false, message: "Form data cannot be empty" })
-
         if (isEmpty(fname))
             return res.status(400).send({ status: false, message: "fname required" });
         if (isEmpty(lname))
@@ -42,7 +40,6 @@ const createUser = async (req, res) => {
             return res.status(400).send({ status: false, message: "phone required" });
         if (isEmpty(address))
             return res.status(400).send({ status: false, message: "address required" });
-
         let add = JSON.parse(address)
         if (isEmpty(add.shipping))
             return res.status(400).send({ status: false, message: "shipping address required" });
@@ -88,7 +85,6 @@ const createUser = async (req, res) => {
         //passowrd bcrypt
         const salt = await bcrypt.genSalt(saltRounds);
         const hashPassword = await bcrypt.hash(password, salt);
-
         if (profileImage.length == 0)
             return res.status(400).send({ status: false, message: "upload profile image" });
         if (profileImage.length > 1)
@@ -302,7 +298,6 @@ const updateUser = async function (req, res) {
             let uploadedFileURL = await uploadFile(profileImage[0]);
             userProfile.profileImage = uploadedFileURL;
         }
-
         await userProfile.save();
         res.status(200).send({
             status: true,

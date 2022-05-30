@@ -105,9 +105,9 @@ const getProduct = async (req, res) => {
                 const sizeArray = size.trim().split(",").map((s) => s.trim());
                 filter['availableSizes'] = { $all: sizeArray }
             }
-
             if (!isEmpty(name)) {
                 filter['title'] = { $regex: name, $options: 'i' }
+                console.log(filter)
             }
             if (priceGreaterThan) {
                 if (isEmpty(priceGreaterThan) || !numCheck(priceGreaterThan)) {
@@ -125,12 +125,14 @@ const getProduct = async (req, res) => {
 
             if (priceGreaterThan && priceLessThan) {
                 filter['price'] = { $gte: priceGreaterThan, $lte: priceLessThan }
+                console.log(filter)
             }
 
             if (priceSort) {
                 if (!isEmpty(priceSort)) {
                     if (!(priceSort == 1 || priceSort == -1))
                         return res.status(400).send({ status: false, message: "Price short value should be 1 or -1 only" })
+                    console.log(filter)
                 }
             }
         }
@@ -313,4 +315,3 @@ const deleteByid = async function (req, res) {
 
 
 module.exports = { createProduct, getProduct, productByid, updateProduct, deleteByid }
-
