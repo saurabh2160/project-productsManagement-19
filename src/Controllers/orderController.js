@@ -100,7 +100,7 @@ const updateOrder = async(req,res)=>{
         if (isEmpty(status)) return res.status(400).send({ status: false, message: "please enter status." })
 
         if (!isValidObjectId(orderId))
-            return res.status(400).send({ status: false, message: "Invalid cart ID" })
+            return res.status(400).send({ status: false, message: "Invalid order ID" })
 
             const validUser = await userModel.findOne({ _id: userId })
             if (!validUser) return res.status(404).send({ status: false, message: "User does not exists" })
