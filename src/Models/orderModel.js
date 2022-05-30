@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const { numCheck } = require('../Utilites/validation')
 const ObjectId = mongoose.Schema.Types.ObjectId
 
 const orderSchema = new mongoose.Schema({
@@ -8,7 +7,6 @@ const orderSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
         trim: true,
-        unique: true
     },
     items: [{
         productId: {
