@@ -82,5 +82,53 @@ const createOrder = async (req, res) => {
 
 }
 
-module.exports = { createOrder }
+//Update Order details
+const updateOrder = async(req,res)=>{
+    try{
+        const userId = req.params.userId
+        if (!isValidObjectId(userId))
+            return res.status(400).send({ status: false, message: "Invalid userId ID" })
+
+        const data = req.body
+        if (isValidRequestBody(data))
+            return res.status(400).send({ status: false, message: "Empty request body" })
+
+        const { orderId, status } = data
+
+
+        if (isEmpty(orderId)) return res.status(400).send({ status: false, message: "Order Id required" })
+        if (isEmpty(status)) return res.status(400).send({ status: false, message: "please enter status." })
+
+        if (!isValidObjectId(orderId))
+            return res.status(400).send({ status: false, message: "Invalid cart ID" })
+
+            const validUser = await userModel.findOne({ _id: userId })
+            if (!validUser) return res.status(404).send({ status: false, message: "User does not exists" })
+
+            const tokenUserId = req.decodeToken.userId;
+            if (tokenUserId !== validUser._id.toString())
+                return res.status(403).send({ status: false, message: "Unauthorized access" })
+            
+            const validOrder = await orderModel.findOne({_id : orderId}) 
+            if (!validOrder) return res.status(404).send({ status: false, message: "Order does not exists" })
+            if(userId !== validOrder.userId.toString())
+            return res.status(400).send({ status: false, message: `Order does not belong to ${validUser.fname} ${validUser.lname}` })
+
+            if(['pending', 'completed', 'cancelled'].indexOf(status) === -1)
+            return res.status(400).send({ status: false, message: `Order status should be 'pending', 'completed', 'cancelled' ` })
+
+            if(status == 'cancelled'){
+                if(validOrder.cancellable== false)
+                return res.status(400).send({ status: false, message: "This order is not cancellable." })
+            }
+
+            validOrder.status = status
+            await validOrder.save()
+            return res.status(200).send({status:true, message:`Status upadated to ${status}`, data:validOrder})
+    }catch (err) {
+        return res.status(500).send({ err: err.message });
+    }
+}
+
+module.exports = { createOrder,updateOrder }
 

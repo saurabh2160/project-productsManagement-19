@@ -5,14 +5,13 @@ const mid = require('../Middlewares/auth')
 const userController = require('../Controllers/userController')
 const productController = require('../Controllers/productController')
 const cartController = require('../Controllers/cartController')
- const orderController = require('../Controllers/orderController')
+const orderController = require('../Controllers/orderController')
 
 //user routes
 router.post('/register', userController.createUser)
 router.post('/login', userController.loginUser)
 router.get('/user/:userId/profile', mid.mid1, userController.getUserProfile)
 router.put('/user/:userId/profile', mid.mid1, userController.updateUser)
-
 
 //product api
 router.post('/products', productController.createProduct)
@@ -29,40 +28,6 @@ router.delete('/users/:userId/cart', mid.mid1, cartController.deleteCart)
 
 //createOrder
 router.post('/users/:userId/orders', mid.mid1, orderController.createOrder)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// router.post('/checktoken',mid.mid1,(req,res)=>{
-//     let token =req.headers.authorization
-//     console.log(token.split(' '))
-//     res.send("i in")
-// })
-
-
-
-
-
+router.put('/users/:userId/orders', mid.mid1, orderController.updateOrder)
 
 module.exports = router
