@@ -25,7 +25,7 @@ const createCart = async (req, res) => {
         if (isEmpty(productId))
             return res.status(400).send({ status: false, message: "product required" })
         if (!quantity)
-          quantity= 1
+        quantity = 1
         quantity = Number(quantity)
         if (typeof quantity !== 'number')
             return res.status(400).send({ status: false, message: "quantity is number" })
