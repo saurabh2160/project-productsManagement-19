@@ -7,15 +7,15 @@ const {
     isValidObjectId,
     checkImage,
     stringCheck,
+    numCheck,
     anyObjectKeysEmpty,
 
 } = require("../Utilites/validation");
 
 const createProduct = async (req, res) => {
     try {
-        let data = JSON.parse(JSON.stringify(req.body));
+        let data = JSON.parse(JSON.stringify(req.body));;
         let productImage = req.files;
-        // console.log(productImage[0].originalname)
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
         if (isValidRequestBody(data))
             return res.status(400).send({ status: false, message: "Form data cannot be empty" });
@@ -49,10 +49,10 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "currencyformat must be ₹ only" });
         if (isEmpty(availableSizes))
             return res.status(400).send({ status: false, message: "availableSizes required" });
+
         if (availableSizes) {
             let arr1 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
             var arr2 = availableSizes.toUpperCase().split(",").map((s) => s.trim())
-            console.log(arr2)
             for (let i = 0; i < arr2.length; i++) {
                 if (!arr1.includes(arr2[i])) {
                     return res.status(400).send({ status: false, message: "availableSizes must be [S, XS, M, X, L, XXL, XL]" });
@@ -61,9 +61,12 @@ const createProduct = async (req, res) => {
         }
 
         //db call for title
-        let unique = await productModel.findOne({ title: title })
-        if (unique)
-            return res.status(400).send({ status: false, message: "title already exists" });
+        let uniqueTitle = await productModel.findOne({ title: { $regex: title, $options: "i" } })
+        if (uniqueTitle) {
+            if (uniqueTitle.title.toUpperCase() == title.toUpperCase()) {
+                return res.status(400).send({ status: false, message: "title is already exsits" })
+            }
+        }
 
         let uploadedFileURL = await uploadFile(productImage[0]);
         let obj = {
@@ -95,28 +98,50 @@ const getProduct = async (req, res) => {
         if (checkquery) return res.status(400).send({ status: false, message: `${checkquery} can't be empty` });
         let filter = { isDeleted: false }
         let { size, name, priceGreaterThan, priceLessThan, priceSort } = userQuery
+
+
         if (Object.keys(userQuery).length > 0) {
+<<<<<<< HEAD
            
             if(!isEmpty(size)){
                 let avilableSize = size.trim().toUpperCase().split(",").map((Elemnt)=>Elemnt.trim())
                 filter['avilableSize']= {$all:avilableSize}
+=======
+            if (!isEmpty(size)) {
+                const sizeArray = size.toUpperCase().trim().split(",").map((s) => s.trim());
+                filter['availableSizes'] = { $all: sizeArray }
+>>>>>>> 9be0a0a3637cf2e63df3d9006f429a131870ed1e
             }
             if (!isEmpty(name)) {
                 filter['title'] = { $regex: name, $options: 'i' }
                 console.log(filter)
             }
             if (priceGreaterThan) {
+<<<<<<< HEAD
                 if (!isEmpty(priceGreaterThan)) {
                     filter['price'] = { $gt: priceGreaterThan }
                     console.log(filter)
+=======
+                if (isEmpty(priceGreaterThan) || !numCheck(priceGreaterThan)) {
+                    return res.status(400).send({ status: false, message: "not valid price" })
+>>>>>>> 9be0a0a3637cf2e63df3d9006f429a131870ed1e
                 }
+                filter['price'] = { $gt: priceGreaterThan }
+
             }
             if (priceLessThan) {
+<<<<<<< HEAD
                 if (!isEmpty(priceLessThan)) {
                     filter['price'] = { $lt: priceLessThan }
                     console.log(filter)
+=======
+                if (isEmpty(priceLessThan) || !numCheck(priceLessThan)) {
+                    return res.status(400).send({ status: false, message: "not valid price" })
+>>>>>>> 9be0a0a3637cf2e63df3d9006f429a131870ed1e
                 }
+                filter['price'] = { $lt: priceLessThan }
             }
+
             if (priceGreaterThan && priceLessThan) {
                 filter['price'] = { $gte: priceGreaterThan, $lte: priceLessThan }
                 console.log(filter)
@@ -130,6 +155,8 @@ const getProduct = async (req, res) => {
                 }
             }
         }
+
+
         let product = await productModel.find(filter).sort({ price: priceSort })
         if (product.length === 0) return res.status(404).send({ status: false, message: "No products found" })
         res.status(200).send({ status: true, data: product })
@@ -138,9 +165,6 @@ const getProduct = async (req, res) => {
         console.log(e.message);
         res.status(500).send({ status: false, message: e.message });
     }
-
-
-
 }
 
 //===============================================[Get product byId]=================================================================
@@ -148,7 +172,6 @@ const getProduct = async (req, res) => {
 const productByid = async function (req, res) {
     try {
         let productId = req.params.productId
-        //console.log(productId);
         if (!isValidObjectId(productId))
             return res.status(400).send({ status: false, message: "Invalid ProductId in params" });
         let product = await productModel.findOne({ _id: productId, isDeleted: false })
@@ -165,14 +188,20 @@ const productByid = async function (req, res) {
 
 const updateProduct = async (req, res) => {
     try {
+
         let data = JSON.parse(JSON.stringify(req.body));
+
         let checkObj = anyObjectKeysEmpty(data)
         if (checkObj) return res.status(400).send({ status: false, message: `${checkObj} can't be empty` });
+
         const productId = req.params.productId
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, isDeleted, deletedAt } = data
 
-        if (isValidRequestBody(data))
-            return res.status(400).send({ status: false, message: "Form data cannot be empty" });
+        const productImage = req.files;
+        
+        if (isValidRequestBody(data) && typeof productImage === 'undefined')
+            return res.status(400).send({ status: false, message: "enter data for update" });
+
         if (!isValidObjectId(productId))
             return res.status(400).send({ status: false, message: "Invalid ProductId in params" });
         if (isDeleted || deletedAt)
@@ -181,13 +210,22 @@ const updateProduct = async (req, res) => {
         if (!product)
             return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
 
+
+
         if (title) {
             if (!isEmpty(title)) {
                 if (!stringCheck(title))
                     return res.status(400).send({ status: false, message: "title invalid" });
+                let uniqueTitle = await productModel.findOne({ title: { $regex: title, $options: "i" } })
+                if (uniqueTitle) {
+                    if (uniqueTitle.title.toUpperCase() == title.toUpperCase()) {
+                        return res.status(400).send({ status: false, message: "title is already exsits" })
+                    }
+                }
                 product.title = title
             }
         }
+
         if (description) {
             if (!isEmpty(description)) {
                 if (!stringCheck(description))
@@ -195,6 +233,7 @@ const updateProduct = async (req, res) => {
                 product.description = description
             }
         }
+
         if (price) {
             if (!isEmpty(price)) {
                 if (!price.match(/^\d{0,8}(\.\d{1,4})?$/))
@@ -202,12 +241,14 @@ const updateProduct = async (req, res) => {
                 product.price = price
             }
         }
+
         if (currencyId) {
             if (!isEmpty(currencyId))
                 if (currencyId !== 'INR')
                     return res.status(400).send({ status: false, message: "currencyId must be INR only" });
             product.currencyId = currencyId
         }
+
         if (currencyFormat) {
             if (!isEmpty(currencyFormat))
                 if (currencyFormat !== '₹')
@@ -215,6 +256,7 @@ const updateProduct = async (req, res) => {
             product.currencyFormat = currencyFormat
 
         }
+
         if (availableSizes) {
             if (!isEmpty(availableSizes))
                 if (availableSizes) {
@@ -228,31 +270,39 @@ const updateProduct = async (req, res) => {
                     product.availableSizes = arr2
                 }
         }
+
         if (isFreeShipping) {
             if (!isEmpty(isFreeShipping))
-                if (typeof isFreeShipping !== 'boolean')
+                if (isFreeShipping !== ('true' || 'false')) {
                     return res.status(400).send({ status: false, message: "isFreeshipping is a boolean type only" });
+                }
             product.isFreeShipping = isFreeShipping
         }
+
         if (style) {
             if (!isEmpty(style))
                 product.style = style
         }
+
         if (installments) {
             if (!isEmpty(installments))
                 if (!installments.match(/^[0-9]{1,2}$/))
                     return res.status(400).send({ status: false, message: "installment invalid" });
             product.installments = installments
         }
-        let productpic = req.files;
-        if (productpic.length > 0) {
-            if (productpic.length > 1)
+
+
+
+        if (productImage.length > 0) {
+            if (productImage.length > 1)
                 return res.status(400).send({ status: false, message: "only one image at a time" });
-            if (!checkImage(productpic[0].originalname))
+            if (!checkImage(productImage[0].originalname))
                 return res.status(400).send({ status: false, message: "format must be jpeg/jpg/png only" })
-            let uploadedFileURL = await uploadFile(productpic[0]);
+            let uploadedFileURL = await uploadFile(productImage[0]);
             product.productImage = uploadedFileURL
         }
+
+
         await product.save()
         res.status(200).send({ status: true, message: "success", data: product })
     } catch (e) {

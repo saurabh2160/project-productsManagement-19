@@ -15,12 +15,12 @@ let isEmpty = function (value) {
 }
 
 let isValidPhone = function (number) {
-    let phoneRegex = /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/;
+    let phoneRegex = /^[+91]{3}?[6789]{1}\d{9}$/;
     return phoneRegex.test(number);
 }
 
 let isValidEmail = function (email) {
-    let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+    let emailRegex = /^([A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/
     return emailRegex.test(email)
 }
 
@@ -33,7 +33,7 @@ let isValidObjectId = function (ObjectId) {
     return mongoose.isValidObjectId(ObjectId)
 }
 let checkPincode = (pincode) => {
-    let pincoderegex = /^[0-9]{6}$/
+    let pincoderegex = /^[1-9]{1}?[0-9]{5}$/
     return pincoderegex.test(pincode)
 }
 let checkImage = (img) => {
@@ -43,6 +43,12 @@ let checkImage = (img) => {
 let stringCheck = (string) => {
     let stringreg = /^[#.a-zA-Z0-9\s,-]+$/
     return stringreg.test(string)
+
+}
+
+let numCheck = (num) => {
+    let numCheck = /^[\0-9]*$/
+    return numCheck.test(num)
 }
 
  let anyObjectKeysEmpty = (value) =>{ 
@@ -70,5 +76,6 @@ module.exports = {
     checkPincode,
     checkImage,
     stringCheck,
+    numCheck,
     anyObjectKeysEmpty
 }
