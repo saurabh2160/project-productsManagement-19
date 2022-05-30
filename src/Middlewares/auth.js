@@ -8,10 +8,8 @@ const mid1 = async function (req, res, next) {
     let token = req.headers.authorization
     if (!token) return res.status(401).send({ status: false, msg: "JWT Token must be present" });
     let splittoken = token.split(' ')
-    console.log(splittoken);
-
+    // decoding token  
      jwt.verify(splittoken[1], "UrAnIuM#GrOuP@19", (err, decode) => {
-       console.log(decode)
       if (err) {
         return res.status(401).send({
           status: false,
@@ -19,7 +17,6 @@ const mid1 = async function (req, res, next) {
         })
       } else {
         req.decodeToken = decode
-        //console.log(req.decodeToken)
         next()
       }
     })

@@ -28,9 +28,12 @@ const createOrder = async (req, res) => {
         if (tokenUserId !== findUser._id.toString())
             return res.status(403).send({ status: false, message: "Unauthorized access" });
 
-        const findCart = await cartModel.findOne({ _id: cartId })
+        const findCart = await cartModel.findOne({ userId: userId })
         if (!findCart) return res.status(404).send({ status: false, message: "No cart found" })
         if (findCart.items.length === 0) return res.status(400).send({ status: false, message: "No Items in cart" })
+        if(cartId!==findCart._id){
+            return res.status(400).send({ status: false, message: `Cart does not belong to ${findUser.fname} ${findUser.lname}` })
+        }
 
         let totalQ = 0
         let cartItems = findCart.items
@@ -57,7 +60,7 @@ const createOrder = async (req, res) => {
 
         await findCart.save()
         const getOrder = await orderModel.create(orderDetails)
-        if(!getOrder)return res.status(400).send({ status: true, message: "Order not Placed" })
+        if (!getOrder) return res.status(400).send({ status: true, message: "Order not Placed" })
 
         let obj = {
             userId: getOrder.userId,
