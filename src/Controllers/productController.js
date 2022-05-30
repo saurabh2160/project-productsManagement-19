@@ -96,32 +96,37 @@ const getProduct = async (req, res) => {
         let filter = { isDeleted: false }
         let { size, name, priceGreaterThan, priceLessThan, priceSort } = userQuery
         if (Object.keys(userQuery).length > 0) {
-            if (!isEmpty(size)) {
-                const sizeArray = size.toUpperCase().trim().split(",").map((s) => s.trim());
-                filter['availableSizes'] = { $all: sizeArray}
+           
+            if(!isEmpty(size)){
+                let avilableSize = size.trim().toUpperCase().split(",").map((Elemnt)=>Elemnt.trim())
+                filter['avilableSize']= {$all:avilableSize}
             }
-
             if (!isEmpty(name)) {
                 filter['title'] = { $regex: name, $options: 'i' }
+                console.log(filter)
             }
             if (priceGreaterThan) {
                 if (!isEmpty(priceGreaterThan)) {
                     filter['price'] = { $gt: priceGreaterThan }
+                    console.log(filter)
                 }
             }
             if (priceLessThan) {
                 if (!isEmpty(priceLessThan)) {
                     filter['price'] = { $lt: priceLessThan }
+                    console.log(filter)
                 }
             }
             if (priceGreaterThan && priceLessThan) {
                 filter['price'] = { $gte: priceGreaterThan, $lte: priceLessThan }
+                console.log(filter)
             }
 
             if (priceSort) {
                 if (!isEmpty(priceSort)) {
                     if (!(priceSort == 1 || priceSort == -1))
                         return res.status(400).send({ status: false, message: "Price short value should be 1 or -1 only" })
+                    console.log(filter)
                 }
             }
         }
@@ -279,7 +284,3 @@ const deleteByid = async function (req, res) {
 
 
 module.exports = { createProduct, getProduct, productByid, updateProduct, deleteByid }
-<<<<<<< HEAD
-=======
-
->>>>>>> 0c3db84576ce333815eeef7a01aef578f97041c7
