@@ -102,7 +102,7 @@ const getProduct = async (req, res) => {
 
         if (Object.keys(userQuery).length > 0) {
             if (!isEmpty(size)) {
-                const sizeArray = size.toUpperCase().trim().split(",").map((s) => s.trim());
+                const sizeArray = size.trim().split(",").map((s) => s.trim());
                 filter['availableSizes'] = { $all: sizeArray }
             }
 
@@ -136,7 +136,7 @@ const getProduct = async (req, res) => {
         }
 
 
-        let product = await productModel.find(filter).sort({ price: priceSort })
+        let product = await productModel.find(filter).sort({ price: priceSort }).collation({ locale: "en", strength: 2 });
         if (product.length === 0) return res.status(404).send({ status: false, message: "No products found" })
         res.status(200).send({ status: true, data: product })
 
