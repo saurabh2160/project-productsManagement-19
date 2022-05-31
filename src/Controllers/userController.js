@@ -22,10 +22,13 @@ const createUser = async (req, res) => {
 
         let profileImage = req.files;
         let { fname, lname, email, phone, password, address } = data;
+
         if (isValidRequestBody(data))
-            return res
-                .status(400)
-                .send({ status: false, message: "Form data cannot be empty" })
+            return res.status(400).send({ status: false, message: "Form data cannot be empty" })
+
+        let checkdata = anyObjectKeysEmpty(data)
+        if (checkdata) return res.status(400).send({ status: false, message: `${checkdata} can't be empty` });
+
         if (isEmpty(fname))
             return res.status(400).send({ status: false, message: "fname required" });
         if (isEmpty(lname))
@@ -34,12 +37,12 @@ const createUser = async (req, res) => {
             return res.status(400).send({ status: false, message: "email required" });
         if (isEmpty(password))
             return res.status(400).send({ status: false, message: "password required" });
-        if (!isValidPassword(password))
-            return res.status(400).send({ status: false, message: "password invalid" });
         if (isEmpty(phone))
             return res.status(400).send({ status: false, message: "phone required" });
         if (isEmpty(address))
             return res.status(400).send({ status: false, message: "address required" });
+
+        //Address Validation
         let add = JSON.parse(address)
         if (isEmpty(add.shipping))
             return res.status(400).send({ status: false, message: "shipping address required" });
@@ -62,29 +65,32 @@ const createUser = async (req, res) => {
         if (!checkPincode(add.billing.pincode))
             return res.status(400).send({ status: false, message: "billing pincode invalid" })
 
-        if (!fname.match(/^[#.a-zA-Z\s,-]+$/))
+        //Regex validation
+        if (!fname.match(/^[#.a-zA-Z\s-]+$/))
             return res.status(400).send({ status: false, message: "enter valid fname" });
-        if (!lname.match(/^[#.a-zA-Z\s,-]+$/))
+        if (!lname.match(/^[#.a-zA-Z\s-]+$/))
             return res.status(400).send({ status: false, message: "enter valid lname" });
         if (!isValidEmail(email))
             return res.status(400).send({ status: false, message: "enter valid email" });
         if (!isValidPhone(phone))
             return res.status(400).send({ status: false, message: "enter valid phone" });
+        if (!isValidPassword(password))
+            return res.status(400).send({ status: false, message: "password invalid" });
+
         //DB calls for phone and email
         let phoneCheck = await userModel.findOne({ phone: phone });
         if (phoneCheck)
-            return res
-                .status(400)
-                .send({ status: false, message: "phone number already exist" });
+            return res.status(400).send({ status: false, message: "phone number already exist" });
+
         let emailCheck = await userModel.findOne({ email: email });
         if (emailCheck)
-            return res
-                .status(400)
-                .send({ status: false, message: "email already exist" });
+            return res.status(400).send({ status: false, message: "email already exist" });
 
         //passowrd bcrypt
         const salt = await bcrypt.genSalt(saltRounds);
         const hashPassword = await bcrypt.hash(password, salt);
+
+        //Profile Image validation
         if (profileImage.length == 0)
             return res.status(400).send({ status: false, message: "upload profile image" });
         if (profileImage.length > 1)
@@ -92,6 +98,7 @@ const createUser = async (req, res) => {
         if (!checkImage(profileImage[0].originalname))
             return res.status(400).send({ status: false, message: "format must be jpeg/jpg/png only" })
         let uploadedFileURL = await uploadFile(profileImage[0]);
+
         let obj = {
             fname,
             lname,
@@ -102,7 +109,7 @@ const createUser = async (req, res) => {
             address: add,
         };
         const result = await userModel.create(obj);
-        res.status(201).send({ status: true, data: result });
+        return res.status(201).send({ status: true, data: result });
     } catch (e) {
         console.log(e.message);
         res.status(500).send({ status: false, message: e.message });
@@ -167,23 +174,14 @@ const getUserProfile = async function (req, res) {
         const tokenUserId = req.decodeToken.userId;
 
         if (!isValidObjectId(userId)) {
-            return res
-                .status(400)
-                .send({ status: false, message: "Invalid userId in params" });
+            return res.status(400).send({ status: false, message: "Invalid userId in params" });
         }
-
         const userProfile = await userModel.findOne({ _id: userId });
-        console.log(userProfile);
-
         if (!userProfile) {
-            return res
-                .status(404)
-                .send({ status: false, message: "User doesn't exits" });
+            return res.status(404).send({ status: false, message: "User doesn't exits" });
         }
         if (tokenUserId !== userProfile._id.toString()) {
-            return res
-                .status(403)
-                .send({ status: false, message: "Unauthorized access" });
+            return res.status(403).send({ status: false, message: "Unauthorized access" });
         }
         return res.status(200).send({ status: true, message: "Profile successfully found", data: userProfile, });
     } catch (error) {
@@ -308,9 +306,4 @@ const updateUser = async function (req, res) {
         return res.status(500).send({ err: err.message });
     }
 };
-module.exports = {
-    createUser,
-    loginUser,
-    getUserProfile,
-    updateUser,
-};
+module.exports = { createUser, loginUser, getUserProfile, updateUser, };
