@@ -60,7 +60,7 @@ const createOrder = async (req, res) => {
 
         await findCart.save()
         const getOrder = await orderModel.create(orderDetails)
-        if (!getOrder) return res.status(400).send({ status: true, message: "Order not Placed" })
+        if (!getOrder) return res.status(400).send({ status: false, message: "Order not Placed" })
 
         let obj = {
             userId: getOrder.userId,
@@ -78,7 +78,7 @@ const createOrder = async (req, res) => {
         return res.status(201).send({ status: true, message: "Order Placed Success", data: obj })
 
     } catch (err) {
-        return res.status(500).send({ err: err.message });
+        return res.status(500).send({status: false,  err: err.message });
     }
 }
 
@@ -109,6 +109,7 @@ const updateOrder = async (req, res) => {
 
         const validOrder = await orderModel.findOne({ _id: orderId })
         if (!validOrder) return res.status(404).send({ status: false, message: "Order does not exists" })
+       
         if (userId !== validOrder.userId.toString())
             return res.status(400).send({ status: false, message: `Order does not belong to ${validUser.fname} ${validUser.lname}` })
 
@@ -127,7 +128,7 @@ const updateOrder = async (req, res) => {
         await validOrder.save()
         return res.status(200).send({ status: true, message: `Status upadated to ${status}`, data: validOrder })
     } catch (err) {
-        return res.status(500).send({ err: err.message });
+        return res.status(500).send({status: false,  err: err.message });
     }
 }
 

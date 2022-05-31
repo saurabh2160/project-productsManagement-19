@@ -66,9 +66,9 @@ const createUser = async (req, res) => {
             return res.status(400).send({ status: false, message: "billing pincode invalid" })
 
         //Regex validation
-        if (!fname.match(/^[#.a-zA-Z\s-]+$/))
+        if (!fname.match(/^[a-zA-Z\s]+$/))
             return res.status(400).send({ status: false, message: "enter valid fname" });
-        if (!lname.match(/^[#.a-zA-Z\s-]+$/))
+        if (!lname.match(/^[a-zA-Z\s]+$/))
             return res.status(400).send({ status: false, message: "enter valid lname" });
         if (!isValidEmail(email))
             return res.status(400).send({ status: false, message: "enter valid email" });
@@ -109,7 +109,7 @@ const createUser = async (req, res) => {
             address: add,
         };
         const result = await userModel.create(obj);
-        return res.status(201).send({ status: true, data: result });
+        return res.status(201).send({ status: true, message: 'Success', data: result });
     } catch (e) {
         console.log(e.message);
         res.status(500).send({ status: false, message: e.message });
@@ -122,48 +122,30 @@ const loginUser = async function (req, res) {
         let data = JSON.parse(JSON.stringify(req.body));
         let { email, password } = data;
         if (isValidRequestBody(data))
-            return res
-                .status(400)
-                .send({ status: false, message: "No input by user" });
+            return res.status(400).send({ status: false, message: "No input by user" });
         if (isEmpty(email))
             return res.status(400).send({ status: false, msg: "email is required." });
         if (isEmpty(password))
-            return res
-                .status(400)
-                .send({ status: false, msg: "Password is required." });
+            return res.status(400).send({ status: false, msg: "Password is required." });
 
         let getUser = await userModel.findOne({ email });
-        if (!getUser)
-            return res.status(404).send({ status: false, msg: "User not found!" });
+        if (!getUser) return res.status(404).send({ status: false, msg: "User not found!" });
 
         let matchPassword = await bcrypt.compare(password, getUser.password);
-        if (!matchPassword)
-            return res
-                .status(401)
-                .send({ status: false, msg: "Password is incorrect." });
+        if (!matchPassword) return res.status(401).send({ status: false, msg: "Password is incorrect." });
 
         //To create token
         let token = jwt.sign(
             {
                 userId: getUser._id,
                 exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
-            },
-            "UrAnIuM#GrOuP@19"
-        );
+            }, "UrAnIuM#GrOuP@19")
 
-        res.setHeader("x-api-key", token);
-        return res
-            .status(200)
-            .send({
-                status: true,
-                msg: "User login sucessful",
-                data: { userId: getUser._id, token: token },
-            });
+        return res.status(200).send({ status: true, message: "User login sucessful", data: { userId: getUser._id, token: token }, });
+
     } catch (err) {
         console.log(err.message);
-        return res
-            .status(500)
-            .send({ status: false, msg: "Error", error: err.message });
+        return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 };
 //====================================================[GET USER BY ID]====================================================
@@ -183,7 +165,7 @@ const getUserProfile = async function (req, res) {
         if (tokenUserId !== userProfile._id.toString()) {
             return res.status(403).send({ status: false, message: "Unauthorized access" });
         }
-        return res.status(200).send({ status: true, message: "Profile successfully found", data: userProfile, });
+        return res.status(200).send({ status: true, message: "Success", data: userProfile, });
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message });
     }
@@ -201,7 +183,7 @@ const updateUser = async function (req, res) {
         const userId = req.params.userId;
 
         let userProfile = await userModel.findOne({ _id: userId });
-        if (!userProfile) return res.status(403).send({ status: false, message: "No user found" });
+        if (!userProfile) return res.status(404).send({ status: false, message: "No user found" });
 
         const tokenUserId = req.decodeToken.userId;
         if (userProfile._id.toString() !== tokenUserId)
@@ -214,15 +196,17 @@ const updateUser = async function (req, res) {
 
         // validation for empty fname and lname
         if (!isEmpty(fname)) {
-            if (!fname.match(/^[#.a-zA-Z\s,-]+$/))
+            if (!fname.match(/^[a-zA-Z\s]+$/))
                 return res.status(400).send({ status: false, message: "enter valid fname" });
             userProfile.fname = fname;
         }
+
         if (!isEmpty(lname)) {
-            if (!fname.match(/^[#.a-zA-Z\s,-]+$/))
+            if (!fname.match(/^[a-zA-Z\s]+$/))
                 return res.status(400).send({ status: false, message: "enter valid fname" });
             userProfile.lname = lname;
         }
+
         if (!isEmpty(email)) {
             if (!isValidEmail(email))
                 return res.status(400).send({ status: false, message: "enter valid email" });
@@ -231,6 +215,7 @@ const updateUser = async function (req, res) {
                 return res.status(400).send({ status: false, msg: " email is already exists" });
             userProfile.email = email;
         }
+
         if (!isEmpty(phone)) {
             if (!isValidPhone(phone))
                 return res.status(400).send({ status: false, msg: " phone num is not valid " });
@@ -239,6 +224,7 @@ const updateUser = async function (req, res) {
                 return res.status(400).send({ status: false, message: "phone number already exist" });
             userProfile.phone = phone;
         }
+
         if (!isEmpty(password)) {
             if (!isValidPassword(password))
                 return res.status(400).send({ status: false, message: "password invalid" });
@@ -246,7 +232,6 @@ const updateUser = async function (req, res) {
             const hashPassword = await bcrypt.hash(password, salt);
             userProfile.password = hashPassword;
         }
-
 
         if (!isEmpty(address)) {
             let add = JSON.parse(address)
@@ -288,6 +273,7 @@ const updateUser = async function (req, res) {
                 }
             }
         }
+
         if (profileImage.length > 0) {
             if (profileImage.length > 1)
                 return res.status(400).send({ status: false, message: "only one image at a time" });
@@ -296,14 +282,12 @@ const updateUser = async function (req, res) {
             let uploadedFileURL = await uploadFile(profileImage[0]);
             userProfile.profileImage = uploadedFileURL;
         }
+
         await userProfile.save();
-        res.status(200).send({
-            status: true,
-            message: "User profile updated",
-            data: userProfile,
-        });
+        res.status(200).send({status: true,message: "User profile updated",data: userProfile,});
+
     } catch (err) {
-        return res.status(500).send({ err: err.message });
+        return res.status(500).send({status: false, err: err.message });
     }
 };
 module.exports = { createUser, loginUser, getUserProfile, updateUser, };

@@ -43,7 +43,6 @@ let checkImage = (img) => {
 let stringCheck = (string) => {
     let stringreg = /^[#.a-zA-Z0-9\s,-]+$/
     return stringreg.test(string)
-
 }
 
 let numCheck = (num) => {
@@ -61,7 +60,6 @@ let numCheck = (num) => {
     })
 
     str = str.trim()
-
     return str==""?false:str
  }
 
