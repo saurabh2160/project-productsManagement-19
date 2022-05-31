@@ -31,20 +31,20 @@ const createOrder = async (req, res) => {
         const findCart = await cartModel.findOne({ userId: userId })
         if (!findCart) return res.status(404).send({ status: false, message: "No cart found" })
         if (findCart.items.length === 0) return res.status(400).send({ status: false, message: "No Items in cart" })
-        if (cartId !== findCart._id) {
+        if (cartId !== findCart._id.toString()) {
             return res.status(400).send({ status: false, message: `Cart does not belong to ${findUser.fname} ${findUser.lname}` })
         }
 
         let totalQ = 0
         let cartItems = findCart.items
-        let productId
+        let productId = []
         for (let i = 0; i < cartItems.length; i++) {
             totalQ += cartItems[i].quantity
-            productId = cartItems[i].productId.toString();
+            productId.push(cartItems[i].productId.toString());
         }
-        let validProduct = await productModel.findOne({ _id: productId, isDeleted: true })
+        let validProduct = await productModel.findOne({ _id: { $in: productId }, isDeleted: true })
         if (validProduct)
-            return res.status(404).send({ status: false, message: `${validProduct.title} Product in your cart has been deleted` })
+            return res.status(404).send({ status: false, message: `Product in your cart has been deleted` })
 
         const orderDetails = {}
         orderDetails['userId'] = userId
@@ -74,7 +74,7 @@ const createOrder = async (req, res) => {
             createdAt: getOrder.createdAt,
             updatedAt: getOrder.updatedAt
         }
-        
+
         return res.status(201).send({ status: true, message: "Order Placed Success", data: obj })
 
     } catch (err) {
@@ -114,6 +114,9 @@ const updateOrder = async (req, res) => {
 
         if (['pending', 'completed', 'cancelled'].indexOf(status) === -1)
             return res.status(400).send({ status: false, message: `Order status should be 'pending', 'completed', 'cancelled' ` })
+
+        // if (validOrder.status == 'cancelled')
+        //     return res.status(400).send({ status: false, message: "This order is already cancelled" })
 
         if (status == 'cancelled') {
             if (validOrder.cancellable == false)
