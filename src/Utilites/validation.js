@@ -20,7 +20,7 @@ let isValidPhone = function (number) {
 }
 
 let isValidEmail = function (email) {
-    let emailRegex = /^([A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/
+    let emailRegex = /^([A-Za-z0-9._-]{2,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/
     return emailRegex.test(email)
 }
 

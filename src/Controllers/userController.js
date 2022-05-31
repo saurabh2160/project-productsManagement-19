@@ -67,15 +67,15 @@ const createUser = async (req, res) => {
 
         //Regex validation
         if (!fname.match(/^[a-zA-Z\s]+$/))
-            return res.status(400).send({ status: false, message: "enter valid fname" });
+            return res.status(400).send({ status: false, message: "enter valid fname (Only alpahabets)" });
         if (!lname.match(/^[a-zA-Z\s]+$/))
-            return res.status(400).send({ status: false, message: "enter valid lname" });
+            return res.status(400).send({ status: false, message: "enter valid lname (Only alpahabets)" });
         if (!isValidEmail(email))
             return res.status(400).send({ status: false, message: "enter valid email" });
         if (!isValidPhone(phone))
-            return res.status(400).send({ status: false, message: "enter valid phone" });
+            return res.status(400).send({ status: false, message: "phone number is not valid e.g-[+91897654321]" });
         if (!isValidPassword(password))
-            return res.status(400).send({ status: false, message: "password invalid" });
+            return res.status(400).send({ status: false, message: "password should contain min one alphabet, number, specical character & Length 8-15" });
 
         //DB calls for phone and email
         let phoneCheck = await userModel.findOne({ phone: phone });
@@ -197,13 +197,13 @@ const updateUser = async function (req, res) {
         // validation for empty fname and lname
         if (!isEmpty(fname)) {
             if (!fname.match(/^[a-zA-Z\s]+$/))
-                return res.status(400).send({ status: false, message: "enter valid fname" });
+                return res.status(400).send({ status: false, message: "enter valid fname (Only alpahabets)" });
             userProfile.fname = fname;
         }
 
         if (!isEmpty(lname)) {
             if (!fname.match(/^[a-zA-Z\s]+$/))
-                return res.status(400).send({ status: false, message: "enter valid fname" });
+                return res.status(400).send({ status: false, message: "enter valid fname (Only alpahabets)" });
             userProfile.lname = lname;
         }
 
@@ -218,7 +218,7 @@ const updateUser = async function (req, res) {
 
         if (!isEmpty(phone)) {
             if (!isValidPhone(phone))
-                return res.status(400).send({ status: false, msg: " phone num is not valid " });
+                return res.status(400).send({ status: false, msg: `phone number is not valid e.g-[+91897654321]` });
             let phoneCheck = await userModel.findOne({ phone: phone });
             if (phoneCheck)
                 return res.status(400).send({ status: false, message: "phone number already exist" });
@@ -227,7 +227,7 @@ const updateUser = async function (req, res) {
 
         if (!isEmpty(password)) {
             if (!isValidPassword(password))
-                return res.status(400).send({ status: false, message: "password invalid" });
+                return res.status(400).send({ status: false, message: "password should contain min one alphabet, number, specical character & Length 8-15" });
             const salt = await bcrypt.genSalt(saltRounds);
             const hashPassword = await bcrypt.hash(password, salt);
             userProfile.password = hashPassword;
