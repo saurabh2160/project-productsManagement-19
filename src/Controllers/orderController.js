@@ -43,14 +43,13 @@ const createOrder = async (req, res) => {
             productId.push(cartItems[i].productId.toString());
         }
         let validProduct = await productModel.findOne({ _id: { $in: productId }, isDeleted: true })
-        if (validProduct)
-            return res.status(404).send({ status: false, message: `Product in your cart has been deleted` })
+        if (validProduct) return res.status(400).send({ status: false, message: `Product in your cart has been deleted` })
 
         const orderDetails = {}
         orderDetails['userId'] = userId
-        orderDetails['items'] = findCart.items
+        orderDetails['items'] = cartItems
         orderDetails['totalPrice'] = findCart.totalPrice
-        orderDetails['totalItems'] = findCart.items.length
+        orderDetails['totalItems'] = cartItems.length
         orderDetails['totalQuantity'] = totalQ
 
         //Change in cart model
@@ -78,7 +77,7 @@ const createOrder = async (req, res) => {
         return res.status(201).send({ status: true, message: "Order Placed Success", data: obj })
 
     } catch (err) {
-        return res.status(500).send({status: false,  err: err.message });
+        return res.status(500).send({ status: false, err: err.message });
     }
 }
 
@@ -109,15 +108,18 @@ const updateOrder = async (req, res) => {
 
         const validOrder = await orderModel.findOne({ _id: orderId })
         if (!validOrder) return res.status(404).send({ status: false, message: "Order does not exists" })
-       
+
         if (userId !== validOrder.userId.toString())
             return res.status(400).send({ status: false, message: `Order does not belong to ${validUser.fname} ${validUser.lname}` })
 
         if (['pending', 'completed', 'cancelled'].indexOf(status) === -1)
             return res.status(400).send({ status: false, message: `Order status should be 'pending', 'completed', 'cancelled' ` })
 
-        // if (validOrder.status == 'cancelled')
-        //     return res.status(400).send({ status: false, message: "This order is already cancelled" })
+        if (validOrder.status == 'cancelled')
+            return res.status(400).send({ status: false, message: "This order is already cancelled" })
+
+        if (validOrder.status == 'completed' && status == 'pending')
+            return res.status(400).send({ status: false, message: "This order is already completed" })
 
         if (status == 'cancelled') {
             if (validOrder.cancellable == false)
@@ -128,7 +130,7 @@ const updateOrder = async (req, res) => {
         await validOrder.save()
         return res.status(200).send({ status: true, message: `Status upadated to ${status}`, data: validOrder })
     } catch (err) {
-        return res.status(500).send({status: false,  err: err.message });
+        return res.status(500).send({ status: false, err: err.message });
     }
 }
 

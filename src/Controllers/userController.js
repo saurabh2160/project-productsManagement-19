@@ -79,12 +79,10 @@ const createUser = async (req, res) => {
 
         //DB calls for phone and email
         let phoneCheck = await userModel.findOne({ phone: phone });
-        if (phoneCheck)
-            return res.status(400).send({ status: false, message: "phone number already exist" });
+        if (phoneCheck) return res.status(400).send({ status: false, message: "phone number already exist" });
 
         let emailCheck = await userModel.findOne({ email: email });
-        if (emailCheck)
-            return res.status(400).send({ status: false, message: "email already exist" });
+        if (emailCheck) return res.status(400).send({ status: false, message: "email already exist" });
 
         //passowrd bcrypt
         const salt = await bcrypt.genSalt(saltRounds);
@@ -108,11 +106,11 @@ const createUser = async (req, res) => {
             password: hashPassword,
             address: add,
         };
-        const result = await userModel.create(obj);
+        let result = await userModel.create(obj);
         return res.status(201).send({ status: true, message: 'Success', data: result });
     } catch (e) {
         console.log(e.message);
-        res.status(500).send({ status: false, message: e.message });
+       return res.status(500).send({ status: false, message: e.message });
     }
 };
 
@@ -179,13 +177,16 @@ const updateUser = async function (req, res) {
         let checkdata = anyObjectKeysEmpty(data)
         if (checkdata) return res.status(400).send({ status: false, message: `${checkdata} can't be empty` });
 
-        let { fname, lname, email, phone, password, address } = data;
-        const userId = req.params.userId;
+        let userId = req.params.userId;
+        if (!isValidObjectId(userId)) 
+            return res.status(400).send({ status: false, message: "Invalid userId in params" });
+            let { fname, lname, email, phone, password, address } = data;
 
+        
         let userProfile = await userModel.findOne({ _id: userId });
         if (!userProfile) return res.status(404).send({ status: false, message: "No user found" });
 
-        const tokenUserId = req.decodeToken.userId;
+        let tokenUserId = req.decodeToken.userId;
         if (userProfile._id.toString() !== tokenUserId)
             return res.status(403).send({ status: false, message: "Unauthorized access" });
 
@@ -211,8 +212,7 @@ const updateUser = async function (req, res) {
             if (!isValidEmail(email))
                 return res.status(400).send({ status: false, message: "enter valid email" });
             let uniqueEmail = await userModel.findOne({ email: email });
-            if (uniqueEmail)
-                return res.status(400).send({ status: false, msg: " email is already exists" });
+            if (uniqueEmail) return res.status(400).send({ status: false, msg: " email is already exists" });
             userProfile.email = email;
         }
 
@@ -220,8 +220,7 @@ const updateUser = async function (req, res) {
             if (!isValidPhone(phone))
                 return res.status(400).send({ status: false, msg: `phone number is not valid e.g-[+91897654321]` });
             let phoneCheck = await userModel.findOne({ phone: phone });
-            if (phoneCheck)
-                return res.status(400).send({ status: false, message: "phone number already exist" });
+            if (phoneCheck) return res.status(400).send({ status: false, message: "phone number already exist" });
             userProfile.phone = phone;
         }
 

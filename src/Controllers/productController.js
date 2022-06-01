@@ -120,7 +120,7 @@ const getProduct = async (req, res) => {
         if (Object.keys(userQuery).length > 0) {
             if (!isEmpty(size)) {
                 const sizeArray = size.trim().split(",").map((s) => s.trim());
-                filter['availableSizes'] = { $all: sizeArray }
+                filter['availableSizes'] = { $in: sizeArray }
             }
             if (!isEmpty(name)) {
                 filter['title'] = { $regex: name, $options: 'i' }
