@@ -45,7 +45,7 @@ const createCart = async (req, res) => {
         if (!validUser) return res.status(404).send({ status: false, message: "User does not exists" })
 
         if (cartId) {
-            let findCart = await cartModel.findOne({ _id: cartId })
+            var findCart = await cartModel.findOne({ _id: cartId })
             if (!findCart)
                 return res.status(404).send({ status: false, message: "Cart does not exists" })
         }
@@ -59,18 +59,21 @@ const createCart = async (req, res) => {
         if (!validProduct) return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
 
         let validCart = await cartModel.findOne({ userId: userId })
-        // if (validCart) {
+        if (!validCart && findCart) {
+            return res.status(403).send({ status: false, message: `Cart does not belong to ${validUser.fname} ${validUser.lname}` })
+        }
+        if (validCart) {
             if (cartId) {
-                if (validCart._id.toString() != cartId || findCart._id != validCart._id.toString()  )
-                    return res.status(400).send({ status: false, message: `Cart does not belong to ${validUser.fname} ${validUser.lname}` })
-            // }
+                if (validCart._id.toString() != cartId)
+                    return res.status(403).send({ status: false, message: `Cart does not belong to ${validUser.fname} ${validUser.lname}` })
+            }
             let productidincart = validCart.items
             let uptotal = validCart.totalPrice + (validProduct.price * Number(quantity))
             let proId = validProduct._id.toString()
             for (let i = 0; i < productidincart.length; i++) {
                 let productfromitem = productidincart[i].productId.toString()
 
-                //updates old product
+                //updates old product i.e QUANTITY
                 if (proId == productfromitem) {
                     let oldQuant = productidincart[i].quantity
                     let newquant = oldQuant + quantity
@@ -159,12 +162,12 @@ const updateCart = async (req, res) => {
         if (!validCart) return res.status(404).send({ status: false, message: "cart doesn't exists" });
 
         if (validCart._id != cartId)
-            return res.status(400).send({ status: false, message: `Cart does not belong to ${validUser.fname} ${validUser.lname}` })
+            return res.status(403).send({ status: false, message: `Cart does not belong to ${validUser.fname} ${validUser.lname}` })
         //🔰🔺 real work is done below
         if (removeProduct == 0) {
             let itemsarr = validCart.items
             if (itemsarr.length == 0)
-                return res.status(400).send({ status: false, message: "No products to remove cart is empty " })
+                return res.status(400).send({ status: false, message: "No products to remove cart is empty" })
 
             for (let i = 0; i < itemsarr.length; i++) {
                 let productIdInitems = itemsarr[i].productId.toString()
@@ -180,12 +183,13 @@ const updateCart = async (req, res) => {
                     return res.send({ status: true, message: 'Success', data: validCart })
                 }
             }
-            return res.status(400).send({ status: false, message: "No products found with given productid in cart" })
+            return res.status(404).send({ status: false, message: "No products found with given productid in cart" })
         }
         if (removeProduct == 1) {
             let itemsarr = validCart.items
             if (itemsarr.length == 0)
-                return res.status(400).send({ status: false, message: "No products to reduce cart is empty" })
+                //return res.status(400).send({ status: false, message: "No products to reduce cart is empty" })
+                return res.status(404).send({ status: false, message: "No products found to reduce with given productid in cart" })
             for (let i = 0; i < itemsarr.length; i++) {
                 let quantity = itemsarr[i].quantity
                 let productIdInitems = itemsarr[i].productId.toString()
@@ -209,7 +213,7 @@ const updateCart = async (req, res) => {
                     return res.status(200).send({ status: true, data: validCart })
                 }
             }
-            return res.status(400).send({ status: false, message: "No products found with given productid in your cart" })
+            return res.status(404).send({ status: false, message: "No products found with given productid in your cart" })
 
         }
     }

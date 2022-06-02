@@ -32,7 +32,7 @@ const createOrder = async (req, res) => {
         if (!findCart) return res.status(404).send({ status: false, message: "No cart found" })
         if (findCart.items.length === 0) return res.status(400).send({ status: false, message: "No Items in cart" })
         if (cartId !== findCart._id.toString()) {
-            return res.status(400).send({ status: false, message: `Cart does not belong to ${findUser.fname} ${findUser.lname}` })
+            return res.status(403).send({ status: false, message: `Cart does not belong to ${findUser.fname} ${findUser.lname}` })
         }
 
         let totalQ = 0
@@ -43,7 +43,7 @@ const createOrder = async (req, res) => {
             productId.push(cartItems[i].productId.toString());
         }
         let validProduct = await productModel.findOne({ _id: { $in: productId }, isDeleted: true })
-        if (validProduct) return res.status(400).send({ status: false, message: `Product in your cart has been deleted` })
+        if (validProduct) return res.status(404).send({ status: false, message: `Product not found  or has been deleted` })
 
         const orderDetails = {}
         orderDetails['userId'] = userId
