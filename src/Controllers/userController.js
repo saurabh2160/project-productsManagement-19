@@ -57,7 +57,7 @@ const createUser = async (req, res) => {
         if (!checkPincode(add.shipping.pincode))
             return res.status(400).send({ status: false, message: "shipping pincode invalid" });
         if (isEmpty(add.billing.street))
-            return res.status(400).send({ status: false, message: "shipping street required" });
+            return res.status(400).send({ status: false, message: "billing street required" });
         if (isEmpty(add.billing.city))
             return res.status(400).send({ status: false, message: "billing city required" });
         if (isEmpty(add.billing.pincode))
@@ -127,7 +127,7 @@ const loginUser = async function (req, res) {
             return res.status(400).send({ status: false, msg: "Password is required." });
 
         let getUser = await userModel.findOne({ email });
-        if (!getUser) return res.status(404).send({ status: false, msg: "User not found!" });
+        if (!getUser) return res.status(404).send({ status: false, msg: "User not found or Email Id is invalid" });
 
         let matchPassword = await bcrypt.compare(password, getUser.password);
         if (!matchPassword) return res.status(401).send({ status: false, msg: "Password is incorrect." });
@@ -272,7 +272,9 @@ const updateUser = async function (req, res) {
                 }
             }
         }
-
+        // if(profileImage){
+        // console.log("a")
+        // }
         if (profileImage.length > 0) {
             if (profileImage.length > 1)
                 return res.status(400).send({ status: false, message: "only one image at a time" });
@@ -283,7 +285,7 @@ const updateUser = async function (req, res) {
         }
 
         await userProfile.save();
-        res.status(200).send({status: true,message: "User profile updated",data: userProfile,});
+        res.status(200).send({status: true,message: "User profile updated",data: userProfile});
 
     } catch (err) {
         return res.status(500).send({status: false, err: err.message });
