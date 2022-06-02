@@ -17,10 +17,10 @@ const createProduct = async (req, res) => {
         let data = JSON.parse(JSON.stringify(req.body));
         let productImage = req.files;
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
-       
+
         if (isValidRequestBody(data))
             return res.status(400).send({ status: false, message: "Form data cannot be empty" });
-        
+
         let checkdata = anyObjectKeysEmpty(data)
         if (checkdata) return res.status(400).send({ status: false, message: `${checkdata} can't be empty` });
 
@@ -31,7 +31,7 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "only one image at a time" });
         if (!checkImage(productImage[0].originalname))
             return res.status(400).send({ status: false, message: "format must be jpeg/jpg/png only" })
-       
+
         if (isEmpty(title))
             return res.status(400).send({ status: false, message: "title required" });
         if (!stringCheck(title))
@@ -42,12 +42,14 @@ const createProduct = async (req, res) => {
         //     return res.status(400).send({ status: false, message: "description invalid" });
         if (isEmpty(price))
             return res.status(400).send({ status: false, message: "price required" });
+        if (price == 0)
+            return res.status(400).send({ status: false, message: "price can't be 0" })
         if (!price.match(/^\d{0,8}(\.\d{1,4})?$/))
             return res.status(400).send({ status: false, message: "price invalid" })
-       
-        if(!isEmpty(installments)){
-        if (!installments.match(/^[0-9]{1,2}$/))
-            return res.status(400).send({ status: false, message: "installment invalid" });
+
+        if (!isEmpty(installments)) {
+            if (!installments.match(/^[0-9]{1,2}$/))
+                return res.status(400).send({ status: false, message: "installment invalid" });
         }
 
         if (isEmpty(currencyId))
@@ -58,8 +60,9 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "currencyFormat required" });
         if (currencyFormat.trim() !== '₹')
             return res.status(400).send({ status: false, message: "currencyformat must be ₹ only" });
-        if (!isEmpty(isFreeShipping)) {
-        if (!["true", "false"].includes(isFreeShipping.trim())) {
+        if (typeof isFreeShipping != 'undefined') {
+            isFreeShipping = isFreeShipping.trim()
+            if (!["true", "false"].includes(isFreeShipping)) {
                 return res.status(400).send({ status: false, message: "isFreeshipping is a boolean type only" });
             }
         }
@@ -92,7 +95,7 @@ const createProduct = async (req, res) => {
             price,
             currencyId,
             currencyFormat,
-            isFreeShipping: isFreeShipping.trim(),
+            isFreeShipping: isFreeShipping,
             style,
             availableSizes: [...new Set(InputSizes)],
             installments,
@@ -140,7 +143,7 @@ const getProduct = async (req, res) => {
             }
 
             if (priceGreaterThan && priceLessThan) {
-                filter['price'] = { $gte: priceGreaterThan, $lte: priceLessThan }
+                filter['price'] = { $gt: priceGreaterThan, $lt: priceLessThan }
             }
 
             if (priceSort) {
@@ -168,7 +171,7 @@ const productByid = async function (req, res) {
         let productId = req.params.productId
         if (!isValidObjectId(productId))
             return res.status(400).send({ status: false, message: "Invalid ProductId in params" });
-        
+
         let product = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!product) return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
         res.status(200).send({ status: true, message: "Success", data: product })
@@ -202,7 +205,7 @@ const updateProduct = async (req, res) => {
         if (isDeleted || deletedAt)
             return res.status(400).send({ status: false, message: "Action can not be performed" });
         const product = await productModel.findOne({ _id: productId, isDeleted: false })
-       
+
         if (!product) return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
 
         if (title) {
@@ -228,6 +231,8 @@ const updateProduct = async (req, res) => {
         }
 
         if (price) {
+            if (price == 0)
+                return res.status(400).send({ status: false, message: "price can't be 0" })
             if (!isEmpty(price)) {
                 if (!price.match(/^\d{0,8}(\.\d{1,4})?$/))
                     return res.status(400).send({ status: false, message: "price invalid" })
@@ -265,7 +270,8 @@ const updateProduct = async (req, res) => {
 
         if (isFreeShipping) {
             if (!isEmpty(isFreeShipping))
-                if (!["true", "false"].includes(isFreeShipping.trim())) {
+            isFreeShipping = isFreeShipping.trim()
+                if (!["true", "false"].includes(isFreeShipping)) {
                     return res.status(400).send({ status: false, message: "isFreeshipping is a boolean type only" });
                 }
             product.isFreeShipping = isFreeShipping
@@ -313,7 +319,8 @@ const deleteByid = async function (req, res) {
         if (!product) return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
 
         let deleteProduct = await productModel.findOneAndUpdate({ _id: productId }, { $set: { isDeleted: true, deletedAt: new Date() } }, { new: true })
-        res.status(200).send({ status: true,message: 'Success', data: deleteProduct })
+        res.status(200).send({ status: true, message: 'Success', data: deleteProduct })
+       // res.status(200).send({ status: true, message: 'Success' })
     }
     catch (e) {
         console.log(e.message);

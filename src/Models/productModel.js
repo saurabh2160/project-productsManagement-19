@@ -31,7 +31,7 @@ const productSchema = new mongoose.Schema(
     isFreeShipping: {
         type:Boolean, 
         default: false,
-        trim:true
+        // trim:true
     },
     productImage: { 
         type: String, // s3 link
