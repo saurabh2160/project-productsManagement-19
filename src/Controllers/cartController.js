@@ -62,12 +62,12 @@ const createCart = async (req, res) => {
             let uptotal = validCart.totalPrice + (validProduct.price * Number(quantity))
             let proId = validProduct._id.toString()
             for (let i = 0; i < productidincart.length; i++) {
-                var productfromitem = productidincart[i].productId.toString()
+                let productfromitem = productidincart[i].productId.toString()
                 
                 //updates old product
                 if (proId == productfromitem) {
-                    let A = productidincart[i].quantity
-                    let newquant = A + quantity
+                    let oldQuant = productidincart[i].quantity
+                    let newquant = oldQuant + quantity
                     productidincart[i].quantity = newquant
                     validCart.totalPrice = uptotal
                     await validCart.save();
@@ -75,9 +75,7 @@ const createCart = async (req, res) => {
                     return res.status(200).send({ status: true, message: 'Success', data: validCart })
                 }
             }
-
             //adds new product
-            if (proId !== productfromitem) {
                 validCart.items.push({ productId: productId, quantity: Number(quantity) })
                 let total = validCart.totalPrice + (validProduct.price * Number(quantity))
                 validCart.totalPrice = total
@@ -86,7 +84,6 @@ const createCart = async (req, res) => {
                 await validCart.save()
                 //let result = await cartModel.findOne({ _id: userId }).select({ "items._id": 0, __v: 0 })
                 return res.status(200).send({ status: true, message: 'Success', data: validCart })
-            }
         }
         
         // 1st time cart
