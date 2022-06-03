@@ -74,7 +74,7 @@ const createOrder = async (req, res) => {
             updatedAt: getOrder.updatedAt
         }
 
-        return res.status(201).send({ status: true, message: "Order Placed Success", data: obj })
+        return res.status(200).send({ status: true, message: "Order Placed Success", data: obj })
 
     } catch (err) {
         return res.status(500).send({ status: false, err: err.message });
@@ -110,7 +110,7 @@ const updateOrder = async (req, res) => {
         if (!validOrder) return res.status(404).send({ status: false, message: "Order does not exists" })
 
         if (userId !== validOrder.userId.toString())
-            return res.status(400).send({ status: false, message: `Order does not belong to ${validUser.fname} ${validUser.lname}` })
+            return res.status(403).send({ status: false, message: `Order does not belong to ${validUser.fname} ${validUser.lname}` })
 
         if (['pending', 'completed', 'cancelled'].indexOf(status) === -1)
             return res.status(400).send({ status: false, message: `Order status should be 'pending', 'completed', 'cancelled' ` })
