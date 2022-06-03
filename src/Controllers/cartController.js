@@ -81,7 +81,7 @@ const createCart = async (req, res) => {
                     validCart.totalPrice = uptotal
                     await validCart.save();
                     // let result = await cartModel.findOne({ _id: userId }).select({ "items._id": 0, __v: 0 })
-                    return res.status(200).send({ status: true, message: 'Success', data: validCart })
+                    return res.status(201).send({ status: true, message: 'Success', data: validCart })
                 }
             }
             //adds new product
@@ -92,7 +92,7 @@ const createCart = async (req, res) => {
             validCart.totalItems = count + 1
             await validCart.save()
             //let result = await cartModel.findOne({ _id: userId }).select({ "items._id": 0, __v: 0 })
-            return res.status(200).send({ status: true, message: 'Success', data: validCart })
+            return res.status(201).send({ status: true, message: 'Success', data: validCart })
         }
 
         // 1st time cart
