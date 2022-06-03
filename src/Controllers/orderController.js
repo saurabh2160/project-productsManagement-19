@@ -74,7 +74,7 @@ const createOrder = async (req, res) => {
             updatedAt: getOrder.updatedAt
         }
 
-        return res.status(200).send({ status: true, message: "Success", data: obj })
+        return res.status(201).send({ status: true, message: "Success", data: obj })
 
     } catch (err) {
         return res.status(500).send({ status: false, err: err.message });

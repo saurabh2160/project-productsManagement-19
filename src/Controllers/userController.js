@@ -139,7 +139,7 @@ const loginUser = async function (req, res) {
                 exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
             }, "UrAnIuM#GrOuP@19")
 
-        return res.status(200).send({ status: true, message: "User login sucessful", data: { userId: getUser._id, token: token }, });
+        return res.status(200).send({ status: true, message: "Success", data: { userId: getUser._id, token: token }, });
 
     } catch (err) {
         console.log(err.message);
@@ -272,9 +272,6 @@ const updateUser = async function (req, res) {
                 }
             }
         }
-        // if(profileImage){
-        // console.log("a")
-        // }
         if (profileImage.length > 0) {
             if (profileImage.length > 1)
                 return res.status(400).send({ status: false, message: "only one image at a time" });
@@ -285,7 +282,7 @@ const updateUser = async function (req, res) {
         }
 
         await userProfile.save();
-        res.status(200).send({status: true,message: "User profile updated",data: userProfile});
+        res.status(200).send({status: true,message:"Success",data: userProfile});
 
     } catch (err) {
         return res.status(500).send({status: false, err: err.message });

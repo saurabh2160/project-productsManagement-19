@@ -102,7 +102,7 @@ const createProduct = async (req, res) => {
             productImage: uploadedFileURL
         }
         let result = await productModel.create(obj)
-        return res.status(201).send({ status: true, message: 'Success', data: result })
+        return res.status(201).send({ status: true, message:'Success', data: result })
     }
     catch (e) {
         console.log(e.message);
@@ -156,7 +156,7 @@ const getProduct = async (req, res) => {
 
         let product = await productModel.find(filter).sort({ price: priceSort }).collation({ locale: "en", strength: 2 });
         if (product.length === 0) return res.status(404).send({ status: false, message: "No products found" })
-        res.status(200).send({ status: true, message: 'Success', data: product })
+        res.status(200).send({ status: true, message:'Success', data: product })
 
     } catch (e) {
         console.log(e.message);
@@ -174,7 +174,7 @@ const productByid = async function (req, res) {
 
         let product = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!product) return res.status(404).send({ status: false, message: "No products found or product has been deleted" })
-        res.status(200).send({ status: true, message: "Success", data: product })
+        res.status(200).send({ status: true, message:"Success", data: product })
     }
     catch (e) {
         console.log(e.message);
