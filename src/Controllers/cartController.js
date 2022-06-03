@@ -210,7 +210,7 @@ const updateCart = async (req, res) => {
                     validCart.totalPrice = priceReduce
                     await validCart.save();
                     // let result = await cartModel.findOne({ _id: userId }).select({ "items._id": 0, __v: 0 })
-                    return res.status(200).send({ status: true, data: validCart })
+                    return res.status(200).send({ status: true, message: 'Success', data: validCart })
                 }
             }
             return res.status(404).send({ status: false, message: "No products found with given productid in your cart" })
