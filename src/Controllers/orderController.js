@@ -74,7 +74,7 @@ const createOrder = async (req, res) => {
             updatedAt: getOrder.updatedAt
         }
 
-        return res.status(200).send({ status: true, message: "Order Placed Success", data: obj })
+        return res.status(200).send({ status: true, message: "Success", data: obj })
 
     } catch (err) {
         return res.status(500).send({ status: false, err: err.message });
@@ -128,7 +128,7 @@ const updateOrder = async (req, res) => {
 
         validOrder.status = status
         await validOrder.save()
-        return res.status(200).send({ status: true, message: `Status upadated to ${status}`, data: validOrder })
+        return res.status(200).send({ status: true, message: `Success`, data: validOrder })
     } catch (err) {
         return res.status(500).send({ status: false, err: err.message });
     }
