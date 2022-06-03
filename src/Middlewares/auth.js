@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { loginUser } = require("../Controllers/userController");
+//const { loginUser } = require("../Controllers/userController");
 
 //Authentication & Authorization
 
