@@ -77,21 +77,19 @@ const createCart = async (req, res) => {
                 if (proId == productfromitem) {
                     let oldQuant = productidincart[i].quantity
                     let newquant = oldQuant + quantity
-                    productidincart[i].quantity = newquant
-                    validCart.totalPrice = uptotal
+                    productidincart[i].quantity = Number(newquant)
+                    validCart.totalPrice = Number(uptotal)
                     await validCart.save();
-                    // let result = await cartModel.findOne({ _id: userId }).select({ "items._id": 0, __v: 0 })
                     return res.status(201).send({ status: true, message: 'Success', data: validCart })
                 }
             }
             //adds new product
             validCart.items.push({ productId: productId, quantity: Number(quantity) })
             let total = validCart.totalPrice + (validProduct.price * Number(quantity))
-            validCart.totalPrice = total
+            validCart.totalPrice = Number(total)
             let count = validCart.totalItems
             validCart.totalItems = count + 1
             await validCart.save()
-            //let result = await cartModel.findOne({ _id: userId }).select({ "items._id": 0, __v: 0 })
             return res.status(201).send({ status: true, message: 'Success', data: validCart })
         }
 
@@ -107,7 +105,7 @@ const createCart = async (req, res) => {
         }
         obj['totalItems'] = obj.items.length
         let result = await cartModel.create(obj)
-        // let result = await cartModel.findOne({ _id: cartId }).select({ "items._id": 0, __v: 0 })
+        //result = await cartModel.findOne({ _id: cartId }).select({ "items._id": 0, __v: 0 })
         return res.status(201).send({ status: true, message: 'Success', data: result })
     }
     catch (err) {
@@ -176,11 +174,11 @@ const updateCart = async (req, res) => {
                 if (productIdInitems == productId) {
                     itemsarr.splice(index, 1)
                     let priceReduce = validCart.totalPrice - (validProduct.price * quantity)
-                    validCart.totalPrice = priceReduce;
+                    validCart.totalPrice = Number(priceReduce);
                     let items = validCart.totalItems
                     validCart.totalItems = items - 1
                     await validCart.save()
-                    return res.send({ status: true, message: 'Success', data: validCart })
+                    return res.status(200).send({ status: true, message: 'Success', data: validCart })
                 }
             }
             return res.status(404).send({ status: false, message: "No products found with given productid in cart" })
@@ -198,7 +196,7 @@ const updateCart = async (req, res) => {
                         let index = i
                         itemsarr.splice(index, 1)
                         let priceReduce = validCart.totalPrice - (validProduct.price * quantity)
-                        validCart.totalPrice = priceReduce;
+                        validCart.totalPrice = Number(priceReduce);
                         let items = validCart.totalItems
                         validCart.totalItems = items - 1
                         await validCart.save();
@@ -207,9 +205,8 @@ const updateCart = async (req, res) => {
                     let priceReduce = validCart.totalPrice - validProduct.price
                     let newquant = quantity - 1
                     itemsarr[i].quantity = newquant
-                    validCart.totalPrice = priceReduce
+                    validCart.totalPrice = Number(priceReduce)
                     await validCart.save();
-                    // let result = await cartModel.findOne({ _id: userId }).select({ "items._id": 0, __v: 0 })
                     return res.status(200).send({ status: true, message: 'Success', data: validCart })
                 }
             }

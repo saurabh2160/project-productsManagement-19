@@ -23,7 +23,8 @@ const cartSchema = new mongoose.Schema({
             required: true,
             trim: true,
             min: 1
-        }
+        },
+        _id: false
     }],
     totalPrice: {
         type: Number,
@@ -36,6 +37,6 @@ const cartSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },          //comment: "Holds total number of items in the cart"
-},{timestamps:true})
+}, { timestamps: true })
 
 module.exports = mongoose.model('Cart', cartSchema)
